@@ -1,4 +1,4 @@
-import { Facebook, Linkedin, Twitter, Mail, Phone, MapPin } from 'lucide-react';
+import { Facebook, Linkedin, Twitter, Mail, Phone, MapPin, Clock } from 'lucide-react';
 
 export default function Footer() {
     return (
@@ -48,7 +48,11 @@ export default function Footer() {
                     <ul className="footer-list contact-list">
                         <li>
                             <MapPin size={18} className="contact-icon" />
-                            <span>Parc Eureka, le Genesis 97 rue de Freyr, 34000 Montpellier</span>
+                            <span>
+                                PARC EUREKA<br />
+                                LE GENESIS 97 RUE DE FREYR<br />
+                                34000 MONTPELLIER
+                            </span>
                         </li>
                         <li>
                             <Phone size={18} className="contact-icon" />
@@ -58,6 +62,14 @@ export default function Footer() {
                             <Mail size={18} className="contact-icon" />
                             <span>contact@efficience-ep2c.com</span>
                         </li>
+                        <li className="open-hours">
+                            <Clock size={18} className="contact-icon" />
+                            <span>
+                                <strong>Horaires d'ouverture :</strong><br />
+                                Du Lundi au Vendredi<br />
+                                9H-12H et 14H-18H
+                            </span>
+                        </li>
                     </ul>
                 </div>
 
@@ -66,8 +78,11 @@ export default function Footer() {
             <div className="container footer-bottom">
                 <p>&copy; 2024 Efficience EP2C. Tous droits réservés.</p>
                 <div className="legal-links">
-                    <a href="#">Mentions Légales</a>
+                    <a href="/mentions-legales">Mentions Légales</a>
                     <a href="#">Politique de Confidentialité</a>
+                </div>
+                <div className="developer-credit">
+                    Développé par <a href="https://microdidact.com" target="_blank" rel="noopener noreferrer">Microdidact</a>
                 </div>
             </div>
         </footer>
