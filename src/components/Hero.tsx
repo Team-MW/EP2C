@@ -31,17 +31,17 @@ export default function Hero() {
 
                 <h1 className="hero-title">
                     6 pôles pour booster <br />
-                    <span className="text-highlight">votre performance</span> <br />
+                    <span className="text-highlight">votre performance 🚀</span> <br />
                     opérationnelle
                 </h1>
 
                 <p className="hero-subtitle">
-                    Coaching, RH, formation, paie, audit ou transformation managériale :
+                    Coaching 🧠, RH 👥, formation 🎓, paie 💼, audit 🔎 ou transformation managériale 📈 :
                     Efficience EP2C vous aide à passer à l'étape supérieure.
                 </p>
 
                 <button className="btn-solutions">
-                    Accédez à nos solutions
+                    Accédez à nos solutions ✨
                 </button>
 
             </div>

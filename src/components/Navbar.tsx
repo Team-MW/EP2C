@@ -10,9 +10,15 @@ export default function Navbar() {
                     <li className="nav-item active">
                         <Link to="/" className="nav-link">ACCUEIL</Link>
                     </li>
-                    <li className="nav-item"><a href="#" className="nav-link">À PROPOS</a></li>
-                    <li className="nav-item"><a href="#" className="nav-link">SERVICES +</a></li>
-                    <li className="nav-item"><a href="#" className="nav-link">BLOG</a></li>
+                    <li className="nav-item">
+                        <Link to="/about" className="nav-link">À PROPOS</Link>
+                    </li>
+                    <li className="nav-item">
+                        <Link to="/services" className="nav-link">SERVICES +</Link>
+                    </li>
+                    <li className="nav-item">
+                        <Link to="/blog" className="nav-link">BLOG</Link>
+                    </li>
                     <li className="nav-item">
                         <button className="nav-btn-search">
                             <Search size={18} />

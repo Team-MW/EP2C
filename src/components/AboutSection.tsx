@@ -26,13 +26,13 @@ export default function AboutSection() {
                     </div>
 
                     <h2 className="about-heading">
-                        Depuis 2020, EP2C <br />
+                        Depuis 2020, EP2C 🌍 <br />
                         accompagne les entreprises.
                     </h2>
 
                     <div className="about-highlight">
                         <p>
-                            Basés en <strong>France, en Algérie et à Monaco</strong>, et bientôt en Suisse,
+                            Basés en <strong>France 🇫🇷, en Algérie 🇩🇿 et à Monaco 🇲🇨</strong>, et bientôt en Suisse 🇨🇭,
                             nous accompagnons des entreprises de toutes tailles avec une vision internationale
                             et des solutions locales.
                         </p>
@@ -46,7 +46,7 @@ export default function AboutSection() {
                                 <Target size={28} strokeWidth={1.5} />
                             </div>
                             <div className="feature-text">
-                                <h3>Notre mission</h3>
+                                <h3>Notre mission 🎯</h3>
                                 <p>
                                     Accompagner les entreprises dans leur développement humain, structurel et stratégique
                                     en leur offrant des solutions sur-mesure à fort impact.
@@ -60,12 +60,12 @@ export default function AboutSection() {
                                 <Rocket size={28} strokeWidth={1.5} />
                             </div>
                             <div className="feature-text">
-                                <h3>Nos valeurs</h3>
+                                <h3>Nos valeurs 💎</h3>
                                 <ul className="values-list">
-                                    <li><strong>Excellence :</strong> Des solutions pointues et adaptées à chaque contexte.</li>
-                                    <li><strong>Proximité :</strong> Une relation de confiance durable.</li>
-                                    <li><strong>Engagement :</strong> Un accompagnement de bout en bout.</li>
-                                    <li><strong>Innovation :</strong> Des approches modernes, tournées vers le futur du travail.</li>
+                                    <li><strong>Excellence 🌟 :</strong> Des solutions pointues et adaptées à chaque contexte.</li>
+                                    <li><strong>Proximité 🤝 :</strong> Une relation de confiance durable.</li>
+                                    <li><strong>Engagement 🔥 :</strong> Un accompagnement de bout en bout.</li>
+                                    <li><strong>Innovation 💡 :</strong> Des approches modernes, tournées vers le futur du travail.</li>
                                 </ul>
                             </div>
                         </div>

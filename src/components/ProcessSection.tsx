@@ -5,7 +5,7 @@ const steps = [
     {
         id: 1,
         number: "1",
-        title: "Premier contact",
+        title: "Premier contact 👋",
         description: "Vous prenez contact avec notre équipe pour exprimer vos besoins ou problématiques.",
         icon: Rocket,
         link: "Nous contacter",
@@ -14,21 +14,21 @@ const steps = [
     {
         id: 2,
         number: "2",
-        title: "Diagnostic & échange stratégique",
+        title: "Diagnostic & échange 🔍",
         description: "Nous organisons un rendez-vous pour analyser votre situation, vos objectifs et vos enjeux.",
         icon: Users
     },
     {
         id: 3,
         number: "3",
-        title: "Proposition d’accompagnement sur-mesure",
+        title: "Proposition sur-mesure 📝",
         description: "Nous construisons ensemble un plan d’action clair et adapté à votre structure, avec les bons experts de nos 6 pôles.",
         icon: Target
     },
     {
         id: 4,
         number: "4",
-        title: "Mise en œuvre & suivi",
+        title: "Mise en œuvre & suivi ✅",
         description: "Nous lançons l’accompagnement avec un suivi régulier, des indicateurs précis et un interlocuteur dédié.",
         icon: Handshake
     }

@@ -76,7 +76,7 @@ export default function Footer() {
             </div>
 
             <div className="container footer-bottom">
-                <p>&copy; 2024 Efficience EP2C. Tous droits réservés.</p>
+                <p>&copy; 2026 Efficience EP2C. Tous droits réservés.</p>
                 <div className="legal-links">
                     <a href="/mentions-legales">Mentions Légales</a>
                     <a href="#">Politique de Confidentialité</a>
