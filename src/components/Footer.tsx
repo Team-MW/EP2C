@@ -1,4 +1,4 @@
-import { Facebook, Linkedin, Twitter, Mail, Phone, MapPin, Clock } from 'lucide-react';
+import { Facebook, Linkedin, Mail, Phone, MapPin, Clock } from 'lucide-react';
 import logoImage from '../assets/logo.png';
 
 export default function Footer() {
@@ -15,7 +15,7 @@ export default function Footer() {
                     <div className="flex gap-4 pt-2">
                         <a href="https://www.linkedin.com/company/efficience-ep2c/?originalSubdomain=fr" target="_blank" rel="noopener noreferrer" className="p-2 bg-white/10 rounded-full hover:bg-[#1044A9] transition-colors"><Linkedin size={18} /></a>
                         <a href="#" className="p-2 bg-white/10 rounded-full hover:bg-[#1044A9] transition-colors"><Facebook size={18} /></a>
-                        <a href="#" className="p-2 bg-white/10 rounded-full hover:bg-[#1044A9] transition-colors"><Twitter size={18} /></a>
+
                     </div>
                 </div>
 
@@ -63,7 +63,7 @@ export default function Footer() {
                         </li>
                         <li className="flex flex-col md:flex-row items-center md:items-center gap-3">
                             <Phone size={20} className="text-[#1044A9] shrink-0" />
-                            <span className="font-bold tracking-wide">+33 6 59 24 73 70</span>
+                            <a href="tel:+33659247370" className="font-bold tracking-wide hover:text-[#1044A9] transition-colors">+33 6 59 24 73 70</a>
                         </li>
                         <li className="flex flex-col md:flex-row items-center md:items-center gap-3">
                             <Mail size={20} className="text-[#1044A9] shrink-0" />

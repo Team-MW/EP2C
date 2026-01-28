@@ -1,9 +1,17 @@
 import Layout from '../Layout';
+import SEO from '../components/SEO';
 import Reveal from '../components/Reveal';
 
 export default function MentionsLegales() {
     return (
         <Layout>
+            <SEO
+                title="Mentions Légales"
+                description="Mentions légales, politique de confidentialité et conditions d'utilisation du site Efficience EP2C."
+                url='https://www.efficience-ep2c.com/mentions-legales'
+                keywords=''
+            />
+            {/* Hero Section */}
             <div className="legal-page-wrapper">
                 <div className="container">
                     <Reveal>

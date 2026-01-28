@@ -2403,6 +2403,9 @@ header {
   justify-content: center;
   overflow: hidden;
   background-color: #1044A9;
+  background-image: linear-gradient(rgba(16, 68, 169, 0.9), rgba(16, 68, 169, 0.8)), url('/background_sections.png');
+  background-size: cover;
+  background-position: center;
 }
 
 .services-hero-title {
@@ -2549,6 +2552,9 @@ header {
   justify-content: center;
   background-color: #111827;
   color: #fff;
+  background-image: linear-gradient(rgba(17, 24, 39, 0.9), rgba(17, 24, 39, 0.8)), url('/background_sections.png');
+  background-size: cover;
+  background-position: center;
 }
 
 .blog-hero-content {

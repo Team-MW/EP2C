@@ -3,6 +3,7 @@ import { CheckCircle } from 'lucide-react';
 import Layout from '../Layout';
 import { services } from '../data/services';
 import Reveal from '../components/Reveal';
+import SEO from '../components/SEO';
 
 export default function ServiceDetail() {
     const { slug } = useParams();
@@ -23,6 +24,13 @@ export default function ServiceDetail() {
 
     return (
         <Layout>
+            <SEO
+                title={`${service.title} - Expertise Efficience EP2C`}
+                description={service.description}
+                keywords={`${service.title}, expertise RH, gestion social, cabinet conseil, Montpellier`}
+                image={service.image}
+                url={`https://www.efficience-ep2c.com/services/${service.slug}`}
+            />
             {/* Hero Banner */}
             <div className="relative h-[60vh] min-h-[500px] flex items-center justify-center overflow-hidden">
                 <div

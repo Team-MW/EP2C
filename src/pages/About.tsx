@@ -1,10 +1,17 @@
 import Layout from '../Layout';
+import SEO from '../components/SEO';
 import Reveal from '../components/Reveal';
 import { Target, Heart, Users, Globe } from 'lucide-react';
 
 export default function About() {
     return (
         <Layout>
+            <SEO
+                title="Qui Sommes-Nous ? - Efficience EP2C"
+                description="Efficience EP2C est un cabinet expert en performance sociale. Découvrez notre équipe, nos valeurs et notre méthodologie d'accompagnement RH & Paie."
+                keywords="agence EP2C, équipe paie Montpellier, consultants RH, expert comptable paie, cabinet conseil social"
+                url='https://www.efficience-ep2c.com/about'
+            />
             {/* Hero Section */}
             <div className="about-hero">
                 <div

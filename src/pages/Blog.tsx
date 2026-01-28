@@ -1,4 +1,5 @@
 import Layout from '../Layout';
+import SEO from '../components/SEO';
 import Reveal from '../components/Reveal';
 import { Calendar, User, ArrowRight } from 'lucide-react';
 
@@ -44,6 +45,12 @@ const blogPosts = [
 export default function Blog() {
     return (
         <Layout>
+            <SEO
+                title="Blog & Actualités RH"
+                description="Suivez toute l'actualité sociale, RH et managériale. Nos conseils d'experts, décryptages réglementaires et tendances pour piloter vos ressources humaines."
+                keywords="blog RH, actualité sociale, veille juridique paie, conseils management, tendances RH, expertise sociale"
+                url='https://www.efficience-ep2c.com/blog'
+            />
             {/* Hero Section */}
             <div className="blog-hero">
                 <div className="blog-hero-content">

@@ -1,4 +1,5 @@
 import Layout from '../Layout';
+import SEO from '../components/SEO';
 import Reveal from '../components/Reveal';
 import { services } from '../data/services';
 import { Link } from 'react-router-dom';
@@ -7,6 +8,12 @@ import { ArrowRight } from 'lucide-react';
 export default function ServicesPage() {
     return (
         <Layout>
+            <SEO
+                title="Nos Services et Expertises"
+                description="Découvrez nos expertises : Gestion de Paie, Ressources Humaines, Formation, Audit Social et Coaching Professionnel. Une offre globale pour la performance de votre entreprise."
+                keywords="services RH, gestion paie, formation professionnelle, audit social, coaching dirigeant, conseil entreprise, expertise sociale"
+                url='https://www.efficience-ep2c.com/services'
+            />
             {/* Hero Section */}
             <div className="services-hero">
                 <div className="services-hero-bg"></div>
