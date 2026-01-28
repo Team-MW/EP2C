@@ -1,10 +1,25 @@
 const express = require('express');
 const cors = require('cors');
 const { PrismaClient } = require('@prisma/client');
+const multer = require('multer');
+const cloudinary = require('cloudinary').v2;
+const streamifier = require('streamifier');
 require('dotenv').config();
 
 const app = express();
 const prisma = new PrismaClient();
+
+// --- CONFIGURATION ---
+
+// Cloudinary
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+// Multer (Memory Storage for Serverless)
+const upload = multer({ storage: multer.memoryStorage() });
 
 app.use(cors());
 app.use(express.json());
@@ -24,11 +39,10 @@ app.get('/api/users', async (req, res) => {
     }
 });
 
-// 2. CREATE / SYNC USER (From Clerk or Frontend)
+// 2. CREATE / SYNC USER
 app.post('/api/users', async (req, res) => {
     const { clerkId, email, firstName, lastName, role } = req.body;
     try {
-        // Check if user exists
         let user = await prisma.user.findUnique({ where: { clerkId } });
 
         if (!user) {
@@ -42,7 +56,6 @@ app.post('/api/users', async (req, res) => {
                 }
             });
         }
-
         res.json(user);
     } catch (error) {
         console.error(error);
@@ -67,36 +80,66 @@ app.get('/api/users/:clerkId/documents', async (req, res) => {
     }
 });
 
-// 4. MOCK UPLOAD DOCUMENT
-app.post('/api/documents', async (req, res) => {
-    const { userId, name, type, size } = req.body;
-
+// 4. REAL UPLOAD DOCUMENT (Cloudinary + DB)
+app.post('/api/documents', upload.single('file'), async (req, res) => {
     try {
-        // userId must be an existing User ID (int)
+        const { userId } = req.body; // Comes from FormData
+        const file = req.file;
+
+        if (!file) {
+            return res.status(400).json({ error: "Aucun fichier fourni" });
+        }
+
+        // 4a. Upload to Cloudinary via Stream
+        const uploadFromBuffer = (buffer) => {
+            return new Promise((resolve, reject) => {
+                let cld_upload_stream = cloudinary.uploader.upload_stream(
+                    {
+                        folder: "ep2c_documents", // Optional: Organize in folder
+                        resource_type: "auto"     // Detect PDF, JPG, etc.
+                    },
+                    (error, result) => {
+                        if (result) {
+                            resolve(result);
+                        } else {
+                            reject(error);
+                        }
+                    }
+                );
+                streamifier.createReadStream(buffer).pipe(cld_upload_stream);
+            });
+        };
+
+        const result = await uploadFromBuffer(file.buffer);
+
+        // 4b. Save Metadata in Prisma
         const doc = await prisma.document.create({
             data: {
-                name,
-                type,
-                size,
+                name: file.originalname,
+                type: result.format || 'unknown', // e.g., 'pdf', 'jpg'
+                size: (result.bytes / 1024 / 1024).toFixed(2) + ' MB', // Convert size to MB string
+                url: result.secure_url,
                 userId: parseInt(userId)
             }
         });
+
         res.json(doc);
+
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Erreur upload" });
+        console.error("Upload Error:", error);
+        res.status(500).json({ error: "Erreur upload vers Cloudinary" });
     }
 });
 
-// Default route for testing
+// Default route
 app.get('/api', (req, res) => {
     res.send('API EP2C is running');
 });
 
-// EXPORT FOR VERCEL
+// Export for Vercel
 module.exports = app;
 
-// LOCAL DEV START
+// Local Dev
 if (require.main === module) {
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {

@@ -1,7 +1,7 @@
 import DashboardLayout from '../../layouts/DashboardLayout';
 import { useUser } from '@clerk/clerk-react';
 import { FileCheck, Clock, AlertCircle, ArrowRight, FileText, Upload } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 // Define types for our DB data
 interface DbDocument {
@@ -56,41 +56,40 @@ export default function ClientDashboard() {
         syncUser();
     }, [user]);
 
-    // 2. Handle "Upload" (Simulation of adding file metadata to DB)
-    const handleSimulatedUpload = async () => {
-        if (!dbUser) return;
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
-        // Simulate a file selection
-        const fakeFiles = [
-            { name: "Kbis_2024.pdf", type: "PDF", size: "1.2 MB" },
-            { name: "Identite_RectoVerso.jpg", type: "JPG", size: "3.5 MB" },
-            { name: "Releve_Bancaire.pdf", type: "PDF", size: "0.8 MB" }
-        ];
+    const triggerFileInput = () => {
+        fileInputRef.current?.click();
+    };
 
-        // Pick random file
-        const file = fakeFiles[Math.floor(Math.random() * fakeFiles.length)];
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!dbUser || !e.target.files || e.target.files.length === 0) return;
+
+        const file = e.target.files[0];
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('userId', dbUser.id.toString());
 
         try {
             const res = await fetch('/api/documents', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    userId: dbUser.id,
-                    name: file.name,
-                    type: file.type,
-                    size: file.size
-                })
+                body: formData // No Content-Type header needed, browser sets it for FormData
             });
 
             if (res.ok) {
                 const newDoc = await res.json();
                 setDocuments([newDoc, ...documents]);
-                alert(`Document "${file.name}" ajouté au dossier !`);
+                alert(`Document "${file.name}" téléversé avec succès !`);
+            } else {
+                throw new Error('Upload failed');
             }
         } catch (err) {
             console.error("Upload error:", err);
-            alert("Erreur lors de l'envoi");
+            alert("Erreur lors de l'envoi du fichier.");
         }
+
+        // Reset input
+        if (fileInputRef.current) fileInputRef.current.value = '';
     };
 
     return (
@@ -149,14 +148,22 @@ export default function ClientDashboard() {
                     <br /><span className="text-sm text-gray-400">Pour tout dossier de création ou de modification.</span>
                 </p>
 
+                <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleFileUpload}
+                    className="hidden"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                />
+
                 <div
                     className="border-3 border-dashed border-blue-100 rounded-xl p-10 bg-blue-50/50 hover:bg-blue-50 hover:border-blue-300 transition-all cursor-pointer group-hover:scale-[1.01]"
-                    onClick={handleSimulatedUpload}
+                    onClick={triggerFileInput}
                 >
                     <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm text-[#1044A9]">
                         <Upload size={32} />
                     </div>
-                    <span className="font-semibold text-[#1044A9]">Cliquez pour ajouter des fichiers (Simulation)</span>
+                    <span className="font-semibold text-[#1044A9]">Cliquez pour ajouter des fichiers</span>
                 </div>
             </div>
 
