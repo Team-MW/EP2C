@@ -1,6 +1,6 @@
 import DashboardLayout from '../../layouts/DashboardLayout';
 import { useUser } from '@clerk/clerk-react';
-import { FileCheck, Clock, AlertCircle, ArrowRight, FileText, Upload } from 'lucide-react';
+import { FileCheck, Clock, AlertCircle, FileText, Upload } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 
 // Define types for our DB data
@@ -17,7 +17,7 @@ export default function ClientDashboard() {
     const { user } = useUser();
     const [dbUser, setDbUser] = useState<any>(null);
     const [documents, setDocuments] = useState<DbDocument[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+
 
     // 1. Sync User with DB on Load AND Fetch Documents
     useEffect(() => {
@@ -48,8 +48,6 @@ export default function ClientDashboard() {
                 }
             } catch (err) {
                 console.error("Error syncing user:", err);
-            } finally {
-                setIsLoading(false);
             }
         };
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useUser, useClerk } from '@clerk/clerk-react';
-import { LayoutDashboard, Users, FileText, Settings, Search, Bell, LogOut, ChevronRight, ExternalLink, UserPlus, X } from 'lucide-react';
+import { Users, FileText, Settings, Search, Bell, LogOut, ChevronRight, ExternalLink, UserPlus, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './admin.css';
 
