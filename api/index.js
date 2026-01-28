@@ -10,7 +10,7 @@ import 'dotenv/config';
 const app = express();
 const prisma = new PrismaClient();
 
-// --- CONFIGURATION ---
+// --- CONFIGUccRATION ---
 
 // Cloudinary
 cloudinary.config({
