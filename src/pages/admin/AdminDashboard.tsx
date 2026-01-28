@@ -1,492 +1,389 @@
-import { useState, useRef } from 'react';
-import { LayoutDashboard, Users, UserPlus, LogOut, TrendingUp, Lock, ArrowLeft, FileText, Download, Eye, CheckCircle, XCircle } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useUser, useClerk } from '@clerk/clerk-react';
+import { LayoutDashboard, Users, FileText, Settings, Search, Bell, LogOut, ChevronRight, ExternalLink, UserPlus, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import './admin.css';
 
-interface Profile {
+// Admin is hardcoded or determined by metadata in a real app
+// For this demo, we assume any logged in user on /admin is admin or we trust the route protection
+// Ideally, check user.publicMetadata.role === 'admin'
+
+interface Document {
     id: number;
     name: string;
-    email: string;
-    company: string;
-    status: 'Active' | 'En attente';
-    date: string;
+    type: string;
+    size: string;
+    url: string;
+    createdAt: string;
+    status: string;
+    userId: number;
 }
 
-interface ClientDocument {
+interface User {
     id: number;
-    name: string;
-    type: string; // PDF, JPG, etc.
-    size: string;
-    date: string;
-    status: 'Validé' | 'En attente' | 'Rejeté';
+    clerkId: string;
+    email: string;
+    firstName: string | null;
+    lastName: string | null;
+    company: string | null;
+    status: string;
+    createdAt: string;
+    documents: Document[];
+    role: string;
 }
 
 export default function AdminDashboard() {
-    // Admin Login State
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [error, setError] = useState('');
+    const { isLoaded } = useUser();
+    const { signOut } = useClerk();
+    const navigate = useNavigate();
 
-    // OTP State
-    const [digits, setDigits] = useState(['', '', '', '', '']);
-    const inputRefs = [useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null)];
-
-    const handleDigitChange = (index: number, value: string) => {
-        if (!/^\d*$/.test(value)) return;
-
-        const newDigits = [...digits];
-        newDigits[index] = value;
-        setDigits(newDigits);
-
-        // Auto-focus next input
-        if (value && index < 4) {
-            inputRefs[index + 1].current?.focus();
-        }
-
-        // Check code if full
-        if (index === 4 && value) {
-            const fullCode = newDigits.slice(0, 4).join('') + value;
-
-            if (fullCode === '00000') {
-                setTimeout(() => {
-                    setIsAuthenticated(true);
-                    setError('');
-                }, 150);
-            } else {
-                setError('Code incorrect');
-                newDigits[index] = ''; // clear last digit
-                setDigits(newDigits);
-            }
-        }
-    };
-
-    const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-        if (e.key === 'Backspace' && !digits[index] && index > 0) {
-            inputRefs[index - 1].current?.focus();
-        }
-    };
-
-    const handleLogout = () => {
-        setIsAuthenticated(false);
-        setDigits(['', '', '', '', '']);
-        setTimeout(() => setError(''), 100);
-    };
-
-    // Dashboard State
-    // 'overview' | 'profiles' | 'client-detail' (but client-detail is handled by selectedProfile !== null)
-    const [activeTab, setActiveTab] = useState<'overview' | 'profiles'>('overview');
+    const [users, setUsers] = useState<User[]>([]);
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const [searchTerm, setSearchTerm] = useState('');
     const [showCreateForm, setShowCreateForm] = useState(false);
-    const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
 
-    // Mock Data
-    const [profiles, setProfiles] = useState<Profile[]>([
-        { id: 1, name: "Jean Dupont", email: "jean@societe.com", company: "Société A", status: "Active", date: "2024-01-15" },
-        { id: 2, name: "Marie Martin", email: "marie@tech.co", company: "Tech Industries", status: "En attente", date: "2024-01-20" },
-        { id: 3, name: "Pierre Durand", email: "pierre@construct.fr", company: "Bati France", status: "Active", date: "2024-01-22" },
-    ]);
+    useEffect(() => {
+        fetchUsers();
+    }, []);
 
-    // Mock Documents Data
-    const mockDocuments: ClientDocument[] = [
-        { id: 101, name: "Kbis_2024.pdf", type: "PDF", size: "1.2 MB", date: "2024-01-25", status: "Validé" },
-        { id: 102, name: "Piece_Identite.jpg", type: "JPG", size: "3.5 MB", date: "2024-01-26", status: "En attente" },
-        { id: 103, name: "RIB.pdf", type: "PDF", size: "0.8 MB", date: "2024-01-26", status: "En attente" },
-        { id: 104, name: "Statuts_Signes.pdf", type: "PDF", size: "5.1 MB", date: "2024-01-24", status: "Rejeté" },
-    ];
+    const fetchUsers = async () => {
+        try {
+            const res = await fetch('/api/users');
+            if (res.ok) {
+                const data = await res.json();
+                setUsers(data);
+            }
+        } catch (error) {
+            console.error("Failed to fetch users", error);
+        }
+    };
 
-    const handleCreateProfile = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSignOut = async () => {
+        await signOut();
+        navigate('/');
+    };
+
+    const handleCreateUser = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
 
-        const newProfile: Profile = {
-            id: profiles.length + 1,
-            name: (formData.get('firstName') as string) + ' ' + (formData.get('lastName') as string),
-            email: formData.get('email') as string,
-            company: formData.get('company') as string,
-            status: 'En attente',
-            date: new Date().toISOString().split('T')[0]
-        };
+        try {
+            const res = await fetch('/api/users/manual', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    firstName: formData.get('firstName'),
+                    lastName: formData.get('lastName'),
+                    email: formData.get('email'),
+                    company: formData.get('company')
+                })
+            });
 
-        setProfiles([newProfile, ...profiles]);
-        setShowCreateForm(false);
-        alert("Profil créé avec succès (Simulation)");
+            if (res.ok) {
+                const newUser = await res.json();
+                setUsers([...users, newUser]);
+                setShowCreateForm(false);
+                alert("Client créé avec succès ! Le client pourra se connecter avec cet email.");
+            } else {
+                const err = await res.json();
+                alert("Erreur: " + err.error);
+            }
+        } catch (error) {
+            alert("Erreur réseau");
+        }
     };
 
-    // Simple Admin Login Screen
-    if (!isAuthenticated) {
-        return (
-            <div style={{
-                display: 'flex',
-                height: '100vh',
-                flexDirection: 'column',
-                justifyContent: 'center',
-                alignItems: 'center',
-                backgroundColor: '#f8fafc',
-                fontFamily: "'Outfit', sans-serif"
-            }}>
-                <div style={{
-                    backgroundColor: 'white',
-                    padding: '3rem 2rem',
-                    borderRadius: '1.5rem',
-                    boxShadow: '0 20px 40px -10px rgba(0, 0, 0, 0.08)',
-                    width: '100%',
-                    maxWidth: '380px',
-                    textAlign: 'center'
-                }}>
-                    <div style={{
-                        width: '60px', height: '60px', backgroundColor: 'rgba(16, 68, 169, 0.1)',
-                        borderRadius: '20px', color: '#1044A9', display: 'flex',
-                        alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem'
-                    }}>
-                        <Lock size={28} strokeWidth={2.5} />
-                    </div>
+    const filteredUsers = users.filter(u =>
+        (u.firstName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (u.lastName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (u.email?.toLowerCase() || '').includes(searchTerm.toLowerCase())
+    );
 
-                    <h1 style={{ color: '#0f172a', fontSize: '1.5rem', fontWeight: '700', marginBottom: '0.5rem' }}>Accès Admin</h1>
-                    <p style={{ color: '#64748b', fontSize: '0.95rem', marginBottom: '2rem' }}>Entrez votre code à 5 chiffres</p>
+    if (!isLoaded) return <div className="flex items-center justify-center h-screen">Chargement...</div>;
 
-                    <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', marginBottom: '1rem' }}>
-                        {digits.map((digit, i) => (
-                            <input
-                                key={i}
-                                ref={inputRefs[i]}
-                                type="text"
-                                inputMode="numeric"
-                                maxLength={1}
-                                value={digit}
-                                onChange={(e) => handleDigitChange(i, e.target.value)}
-                                onKeyDown={(e) => handleKeyDown(i, e)}
-                                style={{
-                                    width: '50px',
-                                    height: '60px',
-                                    fontSize: '1.5rem',
-                                    fontWeight: 'bold',
-                                    textAlign: 'center',
-                                    borderRadius: '12px',
-                                    border: error ? '2px solid #ef4444' : '2px solid #e2e8f0',
-                                    backgroundColor: '#f8fafc',
-                                    color: '#0f172a',
-                                    outline: 'none',
-                                    caretColor: 'transparent',
-                                    transition: 'all 0.2s ease'
-                                }}
-                                onFocus={(e) => e.target.style.borderColor = '#1044A9'}
-                                onBlur={(e) => e.target.style.borderColor = error ? '#ef4444' : '#e2e8f0'}
-                            />
-                        ))}
-                    </div>
-
-                    {error && <p style={{ color: '#ef4444', fontSize: '0.9rem', fontWeight: '500', minHeight: '1.5rem' }}>{error}</p>}
-
-                    <div style={{ marginTop: '2rem' }}>
-                        <Link to="/" style={{
-                            color: '#94a3b8',
-                            fontSize: '0.85rem',
-                            textDecoration: 'none',
-                            fontWeight: '500',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '0.25rem'
-                        }}>
-                            Retour au site
-                        </Link>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    // DETAIL VIEW RENDERER
-    const renderClientDetail = () => {
-        if (!selectedProfile) return null;
-
-        return (
-            <div className="animate-fade-in">
-                {/* Header with Back Button */}
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '2rem', gap: '1rem' }}>
-                    <button
-                        onClick={() => setSelectedProfile(null)}
-                        style={{
-                            display: 'flex', alignItems: 'center', gap: '0.5rem',
-                            padding: '0.5rem 1rem', border: '1px solid #e5e7eb',
-                            borderRadius: '0.5rem', background: 'white', cursor: 'pointer',
-                            color: '#6b7280', fontWeight: 500
-                        }}
-                    >
-                        <ArrowLeft size={18} /> Retour
-                    </button>
-                    <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>Dossier Client</h2>
-                </div>
-
-                {/* Client Info Card */}
-                <div style={{
-                    background: 'white', padding: '2rem', borderRadius: '1rem',
-                    border: '1px solid #e5e7eb', marginBottom: '2rem',
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem'
-                }}>
-                    <div>
-                        <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', color: '#1044A9', marginBottom: '0.5rem' }}>
-                            {selectedProfile.name}
-                        </h3>
-                        <div style={{ display: 'flex', gap: '1.5rem', color: '#6b7280', fontSize: '0.9rem' }}>
-                            <span>🏢 {selectedProfile.company}</span>
-                            <span>📧 {selectedProfile.email}</span>
-                            <span>📅 Depuis le {selectedProfile.date}</span>
-                        </div>
-                    </div>
-                    <div>
-                        <span className={`status-badge ${selectedProfile.status === 'Active' ? 'status-active' : 'status-pending'}`} style={{ fontSize: '1rem', padding: '0.5rem 1rem' }}>
-                            {selectedProfile.status}
-                        </span>
-                    </div>
-                </div>
-
-                {/* Documents Section */}
-                <div className="profiles-section">
-                    <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <h3 className="section-title">Documents Partagés</h3>
-                        <span style={{ fontSize: '0.85rem', color: '#6b7280' }}>
-                            {mockDocuments.length} fichiers disponibles
-                        </span>
-                    </div>
-
-                    <div className="table-container">
-                        <table className="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Nom du fichier</th>
-                                    <th>Type</th>
-                                    <th>Date d'envoi</th>
-                                    <th>Statut</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {mockDocuments.map((doc) => (
-                                    <tr key={doc.id}>
-                                        <td style={{ fontWeight: 500, display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                                            <div style={{
-                                                width: '32px', height: '32px', borderRadius: '6px',
-                                                background: '#eff6ff', color: '#1044A9', display: 'flex',
-                                                alignItems: 'center', justifyContent: 'center'
-                                            }}>
-                                                <FileText size={16} />
-                                            </div>
-                                            {doc.name}
-                                        </td>
-                                        <td style={{ color: '#6b7280' }}>{doc.type} • {doc.size}</td>
-                                        <td>{doc.date}</td>
-                                        <td>
-                                            <span style={{
-                                                display: 'inline-flex', alignItems: 'center', gap: '0.25rem',
-                                                padding: '0.25rem 0.75rem', borderRadius: '99px', fontSize: '0.75rem', fontWeight: 600,
-                                                backgroundColor: doc.status === 'Validé' ? '#dcfce7' : doc.status === 'Rejeté' ? '#fee2e2' : '#fef9c3',
-                                                color: doc.status === 'Validé' ? '#166534' : doc.status === 'Rejeté' ? '#991b1b' : '#854d0e'
-                                            }}>
-                                                {doc.status === 'Validé' && <CheckCircle size={12} />}
-                                                {doc.status === 'Rejeté' && <XCircle size={12} />}
-                                                {doc.status === 'En attente' && <TrendingUp size={12} />}
-                                                {doc.status}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div style={{ display: 'flex', gap: '0.5rem' }}>
-                                                <button title="Voir" style={{ padding: '0.4rem', borderRadius: '0.4rem', border: '1px solid #e5e7eb', background: 'white', cursor: 'pointer', color: '#6b7280' }}>
-                                                    <Eye size={16} />
-                                                </button>
-                                                <button title="Télécharger" style={{ padding: '0.4rem', borderRadius: '0.4rem', border: '1px solid #e5e7eb', background: 'white', cursor: 'pointer', color: '#6b7280' }}>
-                                                    <Download size={16} />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        );
-    };
-
-    // Authenticated Admin Dashboard
     return (
-        <div className="admin-layout">
+        <div className="admin-layout flex h-screen bg-gray-50 text-gray-800 font-sans">
             {/* Sidebar */}
-            <aside className="admin-sidebar">
-                <div className="admin-logo">
-                    <h2>EP2C ADMIN</h2>
-                    <span>Panel de Gestion</span>
+            <aside className="w-64 bg-white border-r border-gray-200 flex flex-col shrink-0 z-20">
+                <div className="h-16 flex items-center px-6 border-b border-gray-100">
+                    <span className="text-xl font-bold text-[#1044A9]">EP2C Admin</span>
                 </div>
 
-                <nav className="admin-nav">
-                    <button
-                        className={`admin-nav-item ${activeTab === 'overview' && !selectedProfile ? 'active' : ''}`}
-                        onClick={() => { setActiveTab('overview'); setSelectedProfile(null); }}
-                    >
-                        <LayoutDashboard size={20} /> Vue d'ensemble
+                <nav className="flex-1 p-4 space-y-1">
+                    <div className="px-2 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Menu Principal</div>
+                    <button onClick={() => setSelectedUser(null)} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${!selectedUser ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50'}`}>
+                        <Users size={18} />
+                        Gestion Clients
                     </button>
-                    <button
-                        className={`admin-nav-item ${activeTab === 'profiles' || selectedProfile ? 'active' : ''}`}
-                        onClick={() => { setActiveTab('profiles'); setSelectedProfile(null); }}
-                    >
-                        <Users size={20} /> Gestion Profils
-                    </button>
-                    <div style={{ flex: 1 }}></div>
-                    <button className="admin-nav-item" onClick={handleLogout}>
-                        <LogOut size={20} /> Déconnexion
-                    </button>
+                    <a href="#" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+                        <FileText size={18} />
+                        Documents
+                    </a>
+                    <a href="#" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
+                        <Settings size={18} />
+                        Configuration
+                    </a>
                 </nav>
 
-                <div className="admin-footer">
-                    <div className="admin-user-info">
-                        <div className="admin-user-avatar">AD</div>
-                        <div style={{ display: 'flex', flexDirection: 'column' }}>
-                            <span style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>Super Admin</span>
-                            <span style={{ fontSize: '0.7rem', color: '#6b7280' }}>Accès Total</span>
-                        </div>
-                    </div>
+                <div className="p-4 border-t border-gray-100">
+                    <button onClick={handleSignOut} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors w-full">
+                        <LogOut size={18} />
+                        Déconnexion
+                    </button>
                 </div>
             </aside>
 
             {/* Main Content */}
-            <main className="admin-main">
-                {selectedProfile ? (
-                    renderClientDetail()
-                ) : (
-                    <>
-                        <header className="admin-header">
-                            <h1 className="admin-title">
-                                {activeTab === 'overview' ? 'Tableau de Bord' : 'Gestion des Profils'}
-                            </h1>
-                        </header>
+            <main className="flex-1 flex flex-col overflow-hidden relative">
+                {/* Header */}
+                <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 shrink-0">
+                    <div className="text-lg font-semibold text-gray-800">
+                        {selectedUser ? `Dossier : ${selectedUser.firstName} ${selectedUser.lastName}` : 'Vue d\'ensemble'}
+                    </div>
+                    <div className="flex items-center gap-4">
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
+                            <input
+                                type="text"
+                                placeholder="Rechercher un client..."
+                                className="pl-9 pr-4 py-2 bg-gray-50 border-none rounded-full text-sm w-64 focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all outline-none"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                        <button className="relative p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors">
+                            <Bell size={20} />
+                            <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
+                        </button>
+                        <div className="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 font-bold text-xs">
+                            AD
+                        </div>
+                    </div>
+                </header>
 
-                        {/* Overview Tab */}
-                        {activeTab === 'overview' && (
-                            <>
-                                <div className="stats-grid">
-                                    <div className="stat-card">
-                                        <span className="stat-label">Utilisateurs Totaux</span>
-                                        <div className="stat-value">{profiles.length}</div>
-                                        <div className="stat-trend"><TrendingUp size={16} style={{ display: 'inline' }} /> +12% ce mois</div>
+                {/* Content Body */}
+                <div className="flex-1 overflow-auto p-8">
+                    {selectedUser ? (
+                        // USER DETAIL VIEW
+                        <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <button onClick={() => setSelectedUser(null)} className="mb-6 text-sm text-gray-500 hover:text-blue-600 flex items-center gap-1 font-medium">← Retour à la liste</button>
+
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
+                                <div className="p-6 border-b border-gray-100 bg-gray-50/50 flex justify-between items-start">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-sm">
+                                            {selectedUser.firstName?.charAt(0) || selectedUser.email.charAt(0)}
+                                        </div>
+                                        <div>
+                                            <h2 className="text-2xl font-bold text-gray-900">{selectedUser.firstName} {selectedUser.lastName}</h2>
+                                            <p className="text-gray-500 text-sm flex items-center gap-2">
+                                                {selectedUser.email}
+                                                <span className="px-2 py-0.5 bg-gray-100 rounded text-xs text-gray-600 font-mono select-all" title="Clerk ID">{selectedUser.clerkId}</span>
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div className="stat-card">
-                                        <span className="stat-label">Dossiers en cours</span>
-                                        <div className="stat-value">24</div>
-                                        <div className="stat-trend">3 à valider</div>
-                                    </div>
-                                    <div className="stat-card">
-                                        <span className="stat-label">Revenus (Est.)</span>
-                                        <div className="stat-value">45.2k€</div>
-                                        <div className="stat-trend">+5% vs N-1</div>
+                                    <div className="flex gap-2">
+                                        <button className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 shadow-sm shadow-blue-200">
+                                            Contacter
+                                        </button>
+                                        <button className="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50">
+                                            Éditer
+                                        </button>
                                     </div>
                                 </div>
-
-                                <div className="profiles-section">
-                                    <div className="section-header">
-                                        <h3 className="section-title">Activité Récente</h3>
+                                <div className="p-6 grid grid-cols-3 gap-6">
+                                    <div>
+                                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1">Société</label>
+                                        <p className="text-gray-900 font-medium">{selectedUser.company || 'Non renseigné'}</p>
                                     </div>
-                                    <div className="table-container">
-                                        <table className="data-table">
-                                            <thead>
+                                    <div>
+                                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1">Statut Dossier</label>
+                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${selectedUser.status === 'Validé' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                                            {selectedUser.status || 'En attente'}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1">Inscription</label>
+                                        <p className="text-gray-900 font-medium">{new Date(selectedUser.createdAt).toLocaleDateString()}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                Documents fournis
+                                <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">{selectedUser.documents?.length || 0}</span>
+                            </h3>
+
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                                <div className="overflow-x-auto"> {/* Added wrapper for overflow */}
+                                    {selectedUser.documents && selectedUser.documents.length > 0 ? (
+                                        <table className="w-full text-left text-sm">
+                                            <thead className="bg-gray-50 border-b border-gray-100 text-gray-500">
                                                 <tr>
-                                                    <th>Utilisateur</th>
-                                                    <th>Société</th>
-                                                    <th>Date</th>
-                                                    <th>Statut</th>
+                                                    <th className="px-6 py-3 font-medium">Nom du fichier</th>
+                                                    <th className="px-6 py-3 font-medium">Type</th>
+                                                    <th className="px-6 py-3 font-medium">Taille</th>
+                                                    <th className="px-6 py-3 font-medium">Date d'envoi</th>
+                                                    <th className="px-6 py-3 font-medium text-right">Actions</th>
                                                 </tr>
                                             </thead>
-                                            <tbody>
-                                                {profiles.slice(0, 5).map(profile => (
-                                                    <tr key={profile.id} onClick={() => setSelectedProfile(profile)} style={{ cursor: 'pointer', transition: 'background-color 0.2s' }} className="hover:bg-gray-50">
-                                                        <td>{profile.name}</td>
-                                                        <td>{profile.company}</td>
-                                                        <td>{profile.date}</td>
-                                                        <td>
-                                                            <span className={`status-badge ${profile.status === 'Active' ? 'status-active' : 'status-pending'}`}>
-                                                                {profile.status}
-                                                            </span>
+                                            <tbody className="divide-y divide-gray-100">
+                                                {selectedUser.documents.map(doc => (
+                                                    <tr key={doc.id} className="hover:bg-gray-50/50 transition-colors">
+                                                        <td className="px-6 py-4 font-medium text-gray-900 flex items-center gap-3">
+                                                            <FileText size={16} className="text-indigo-500" />
+                                                            {doc.name}
+                                                        </td>
+                                                        <td className="px-6 py-4 text-gray-500 uppercase text-xs font-semibold">{doc.type}</td>
+                                                        <td className="px-6 py-4 text-gray-500 tabular-nums">{doc.size}</td>
+                                                        <td className="px-6 py-4 text-gray-500 tabular-nums">{new Date(doc.createdAt).toLocaleDateString()}</td>
+                                                        <td className="px-6 py-4 text-right">
+                                                            <a
+                                                                href={doc.url}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium text-xs border border-blue-200 hover:border-blue-300 bg-blue-50 px-3 py-1.5 rounded-md transition-all"
+                                                            >
+                                                                Voir <ExternalLink size={12} />
+                                                            </a>
                                                         </td>
                                                     </tr>
                                                 ))}
                                             </tbody>
                                         </table>
-                                    </div>
-                                </div>
-                            </>
-                        )}
-
-                        {/* Profiles Tab */}
-                        {activeTab === 'profiles' && (
-                            <div className="profiles-section">
-                                <div className="section-header">
-                                    <h3 className="section-title">Liste des Profils</h3>
-                                    <button className="btn-primary" onClick={() => setShowCreateForm(!showCreateForm)}>
-                                        <UserPlus size={18} />
-                                        {showCreateForm ? 'Fermer' : 'Créer un profil'}
-                                    </button>
-                                </div>
-
-                                {showCreateForm && (
-                                    <form className="create-profile-form" onSubmit={handleCreateProfile}>
-                                        <div className="form-group">
-                                            <label>Prénom</label>
-                                            <input name="firstName" required placeholder="Ex: Thomas" />
+                                    ) : (
+                                        <div className="p-12 text-center text-gray-400">
+                                            <FileText size={48} className="mx-auto mb-3 opacity-20" />
+                                            <p>Aucun document disponible pour ce dossier.</p>
                                         </div>
-                                        <div className="form-group">
-                                            <label>Nom</label>
-                                            <input name="lastName" required placeholder="Ex: Martin" />
-                                        </div>
-                                        <div className="form-group">
-                                            <label>Email</label>
-                                            <input name="email" type="email" required placeholder="thomas@example.com" />
-                                        </div>
-                                        <div className="form-group">
-                                            <label>Société</label>
-                                            <input name="company" required placeholder="Entreprise SAS" />
-                                        </div>
-                                        <div className="form-group full-width">
-                                            <button type="submit" className="btn-primary">Enregistrer le profil</button>
-                                        </div>
-                                    </form>
-                                )}
-
-                                <div className="table-container">
-                                    <table className="data-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Nom</th>
-                                                <th>Email</th>
-                                                <th>Société</th>
-                                                <th>Statut</th>
-                                                <th>Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {profiles.map(profile => (
-                                                <tr key={profile.id} onClick={() => setSelectedProfile(profile)} style={{ cursor: 'pointer', transition: 'background-color 0.2s' }} className="hover:bg-gray-50">
-                                                    <td>{profile.name}</td>
-                                                    <td>{profile.email}</td>
-                                                    <td>{profile.company}</td>
-                                                    <td>
-                                                        <span className={`status-badge ${profile.status === 'Active' ? 'status-active' : 'status-pending'}`}>
-                                                            {profile.status}
-                                                        </span>
-                                                    </td>
-                                                    <td>
-                                                        <button
-                                                            onClick={(e) => { e.stopPropagation(); setSelectedProfile(profile); }}
-                                                            style={{ color: 'var(--admin-primary)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}
-                                                        >
-                                                            Gérer
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
+                                    )}
                                 </div>
                             </div>
-                        )}
-                    </>
-                )}
+                        </div>
+                    ) : (
+                        // USER LIST VIEW
+                        <>
+                            <div className="mb-8 flex items-end justify-between">
+                                <div>
+                                    <h1 className="text-2xl font-bold text-gray-900">Clients</h1>
+                                    <p className="text-gray-500 mt-1">Gérez vos clients et accédez à leurs dossiers.</p>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <div className="text-sm text-gray-500">
+                                        Total: <strong className="text-gray-900">{users.length}</strong> clients
+                                    </div>
+                                    <button
+                                        onClick={() => setShowCreateForm(true)}
+                                        className="flex items-center gap-2 bg-[#1044A9] text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                                    >
+                                        <UserPlus size={18} />
+                                        Nouveau Client
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* CREATE MODAL */}
+                            {showCreateForm && (
+                                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                                    <div className="bg-white rounded-2xl shadow-xl max-w-md w-full overflow-hidden">
+                                        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                                            <h3 className="text-lg font-bold text-gray-900">Nouveau Client</h3>
+                                            <button onClick={() => setShowCreateForm(false)} className="text-gray-400 hover:text-gray-600">
+                                                <X size={20} />
+                                            </button>
+                                        </div>
+                                        <form onSubmit={handleCreateUser} className="p-6 space-y-4">
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-1">
+                                                    <label className="text-sm font-medium text-gray-700">Prénom</label>
+                                                    <input required name="firstName" className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none" placeholder="Thomas" />
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <label className="text-sm font-medium text-gray-700">Nom</label>
+                                                    <input required name="lastName" className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none" placeholder="Martin" />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-sm font-medium text-gray-700">Email (Identifiant)</label>
+                                                <input required type="email" name="email" className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none" placeholder="client@exemple.com" />
+                                                <p className="text-xs text-gray-500">Le client devra utiliser cet email pour s'inscrire/se connecter.</p>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-sm font-medium text-gray-700">Société</label>
+                                                <input name="company" className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none" placeholder="Ex: Société SAS" />
+                                            </div>
+                                            <div className="pt-4 flex gap-3">
+                                                <button type="button" onClick={() => setShowCreateForm(false)} className="flex-1 px-4 py-2 border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 font-medium">Annuler</button>
+                                                <button type="submit" className="flex-1 px-4 py-2 bg-[#1044A9] text-white rounded-lg hover:bg-blue-700 font-medium">Créer</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                                <table className="w-full text-left border-collapse">
+                                    <thead className="bg-gray-50/80 text-gray-500 text-xs uppercase tracking-wider font-semibold border-b border-gray-200">
+                                        <tr>
+                                            <th className="px-6 py-4">Client</th>
+                                            <th className="px-6 py-4">ID Clerk / Email</th>
+                                            <th className="px-6 py-4">Statut</th>
+                                            <th className="px-6 py-4 text-center">Docs</th>
+                                            <th className="px-6 py-4 text-right">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-100">
+                                        {filteredUsers.length > 0 ? filteredUsers.map(u => (
+                                            <tr
+                                                key={u.id}
+                                                onClick={() => setSelectedUser(u)}
+                                                className="hover:bg-blue-50/30 transition-colors cursor-pointer group"
+                                            >
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 font-bold text-sm group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors">
+                                                            {u.firstName?.charAt(0) || u.email.charAt(0)}
+                                                        </div>
+                                                        <div>
+                                                            <div className="font-semibold text-gray-900">{u.firstName} {u.lastName || ''}</div>
+                                                            <div className="text-xs text-gray-400">{u.company}</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="text-sm text-gray-600">{u.email}</div>
+                                                    <div className="text-[10px] text-gray-400 font-mono mt-0.5" title={u.clerkId}>{u.clerkId.substring(0, 15)}...</div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${u.status === 'Validé' ? 'bg-green-50 text-green-700' : 'bg-yellow-50 text-yellow-700'}`}>
+                                                        <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${u.status === 'Validé' ? 'bg-green-500' : 'bg-yellow-500'}`}></span>
+                                                        {u.status}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 text-center">
+                                                    <span className={`inline-flex items-center justify-center min-w-[2rem] h-6 rounded px-1.5 text-xs font-bold ${u.documents?.length > 0 ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}`}>
+                                                        {u.documents?.length || 0}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 text-right">
+                                                    <button className="text-gray-400 hover:text-blue-600 p-1 rounded-md hover:bg-blue-50 transition-all">
+                                                        <ChevronRight size={20} />
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        )) : (
+                                            <tr>
+                                                <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                                                    Aucun client trouvé.
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </>
+                    )}
+                </div>
             </main>
         </div>
     );

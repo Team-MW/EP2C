@@ -1,10 +1,11 @@
-const express = require('express');
-const cors = require('cors');
-const { PrismaClient } = require('@prisma/client');
-const multer = require('multer');
-const cloudinary = require('cloudinary').v2;
-const streamifier = require('streamifier');
-require('dotenv').config();
+import express from 'express';
+import cors from 'cors';
+import pkg from '@prisma/client';
+const { PrismaClient } = pkg;
+import multer from 'multer';
+import { v2 as cloudinary } from 'cloudinary';
+import streamifier from 'streamifier';
+import 'dotenv/config';
 
 const app = express();
 const prisma = new PrismaClient();
@@ -43,8 +44,22 @@ app.get('/api/users', async (req, res) => {
 app.post('/api/users', async (req, res) => {
     const { clerkId, email, firstName, lastName, role } = req.body;
     try {
+        // Try to find by Clerk ID first
         let user = await prisma.user.findUnique({ where: { clerkId } });
 
+        // If not found, try to find by Email (Pre-provisioning case)
+        if (!user && email) {
+            user = await prisma.user.findUnique({ where: { email } });
+            if (user) {
+                // Link the real Clerk ID to the pre-existing user
+                user = await prisma.user.update({
+                    where: { id: user.id },
+                    data: { clerkId, firstName, lastName } // Update details too
+                });
+            }
+        }
+
+        // If still not found, create new
         if (!user) {
             user = await prisma.user.create({
                 data: {
@@ -60,6 +75,34 @@ app.post('/api/users', async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Erreur création user' });
+    }
+});
+
+// 2b. MANUAL CREATE (Admin)
+app.post('/api/users/manual', async (req, res) => {
+    const { email, firstName, lastName, company } = req.body;
+    try {
+        // Generate a temporary placeholder ID
+        const tempId = `pre_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+        const user = await prisma.user.create({
+            data: {
+                clerkId: tempId,
+                email,
+                firstName,
+                lastName,
+                company,
+                role: 'client',
+                status: 'En attente'
+            }
+        });
+        res.json(user);
+    } catch (error) {
+        console.error("Manual create error:", error);
+        if (error.code === 'P2002') {
+            return res.status(409).json({ error: "Cet email existe déjà." });
+        }
+        res.status(500).json({ error: 'Erreur création manuelle' });
     }
 });
 
@@ -116,8 +159,8 @@ app.post('/api/documents', upload.single('file'), async (req, res) => {
         const doc = await prisma.document.create({
             data: {
                 name: file.originalname,
-                type: result.format || 'unknown', // e.g., 'pdf', 'jpg'
-                size: (result.bytes / 1024 / 1024).toFixed(2) + ' MB', // Convert size to MB string
+                type: result.format || 'unknown',
+                size: (result.bytes / 1024 / 1024).toFixed(2) + ' MB',
                 url: result.secure_url,
                 userId: parseInt(userId)
             }
@@ -137,10 +180,15 @@ app.get('/api', (req, res) => {
 });
 
 // Export for Vercel
-module.exports = app;
+export default app;
 
-// Local Dev
-if (require.main === module) {
+// Local Dev: Run only if executed directly (ESM doesn't have require.main === module, checking process.argv can work but complicated. 
+// For local dev with 'node api/index.js', we can just run listen. 
+// But Vercel imports it. 
+// A common pattern is to listen if not imported.
+// In ESM: import.meta.url === pathToFileURL(process.argv[1]).href
+// Or just check if we are in Vercel environment.
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
         console.log(`Serveur Backend démarré sur http://localhost:${PORT}`);
