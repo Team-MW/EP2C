@@ -22,7 +22,7 @@ function App() {
         <Route path="/blog" element={<Blog />} />
         <Route path="/services/:slug" element={<ServiceDetail />} />
 
-        {/* Dashboard Routes - Protected in real app */}
+        {/* Dashboard Routes - Protected in   real app */}
         <Route path="/panel" element={<ClientDashboard />} />
         <Route path="/panel/documents" element={<ClientDocuments />} />
 
