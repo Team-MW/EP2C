@@ -35,7 +35,7 @@ app.get('/api/ping', (req, res) => {
     res.json({ status: 'ok', message: 'Backend is running!', time: new Date() });
 });
 
-// 1. GET ALL USERS (Admin)
+// 1. GET ALL USERS.  (Admin)
 app.get('/api/users', async (req, res) => {
     try {
         const users = await prisma.user.findMany({
