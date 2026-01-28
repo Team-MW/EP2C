@@ -56,6 +56,11 @@ export default function ClientDashboard() {
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [isUploading, setIsUploading] = useState(false);
+    const [showSuccessNotification, setShowSuccessNotification] = useState(false);
+    const [uploadedFileName, setUploadedFileName] = useState('');
+
     const triggerFileInput = () => {
         fileInputRef.current?.click();
     };
@@ -68,21 +73,51 @@ export default function ClientDashboard() {
         formData.append('file', file);
         formData.append('userId', dbUser.id.toString());
 
+        setIsUploading(true);
+        setUploadProgress(0);
+        setUploadedFileName(file.name);
+
         try {
+            // Simulate progress (since fetch doesn't provide real upload progress easily)
+            const progressInterval = setInterval(() => {
+                setUploadProgress(prev => {
+                    if (prev >= 90) {
+                        clearInterval(progressInterval);
+                        return 90;
+                    }
+                    return prev + 10;
+                });
+            }, 200);
+
             const res = await fetch('/api/documents', {
                 method: 'POST',
-                body: formData // No Content-Type header needed, browser sets it for FormData
+                body: formData
             });
 
+            clearInterval(progressInterval);
+
             if (res.ok) {
+                setUploadProgress(100);
                 const newDoc = await res.json();
                 setDocuments([newDoc, ...documents]);
-                alert(`Document "${file.name}" téléversé avec succès !`);
+
+                // Show success notification
+                setTimeout(() => {
+                    setIsUploading(false);
+                    setShowSuccessNotification(true);
+
+                    // Hide notification after 4 seconds
+                    setTimeout(() => {
+                        setShowSuccessNotification(false);
+                    }, 4000);
+                }, 500);
             } else {
                 throw new Error('Upload failed');
             }
         } catch (err) {
             console.error("Upload error:", err);
+            setIsUploading(false);
+            setUploadProgress(0);
             alert("Erreur lors de l'envoi du fichier.");
         }
 
@@ -92,6 +127,50 @@ export default function ClientDashboard() {
 
     return (
         <DashboardLayout>
+            {/* Upload Progress Overlay */}
+            {isUploading && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center animate-in fade-in duration-200">
+                    <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
+                        <div className="text-center mb-6">
+                            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <Upload className="text-[#1044A9] animate-bounce" size={32} />
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Envoi en cours...</h3>
+                            <p className="text-gray-500 text-sm">{uploadedFileName}</p>
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div className="relative h-3 bg-gray-200 rounded-full overflow-hidden">
+                            <div
+                                className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#1044A9] to-[#2563eb] transition-all duration-300 ease-out rounded-full"
+                                style={{ width: `${uploadProgress}%` }}
+                            >
+                                <div className="absolute inset-0 bg-white/30 animate-pulse"></div>
+                            </div>
+                        </div>
+                        <p className="text-center text-sm text-gray-600 mt-3 font-semibold">{uploadProgress}%</p>
+                    </div>
+                </div>
+            )}
+
+            {/* Success Notification */}
+            {showSuccessNotification && (
+                <div className="fixed top-8 right-8 z-50 animate-in slide-in-from-right duration-500">
+                    <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-4 min-w-[320px]">
+                        <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+                            <FileCheck size={24} className="text-white" />
+                        </div>
+                        <div className="flex-1">
+                            <h4 className="font-bold text-lg mb-1">Document envoyé !</h4>
+                            <p className="text-sm text-green-50">{uploadedFileName}</p>
+                        </div>
+                        <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                            <span className="text-2xl">✓</span>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="mb-10">
                 <h2 className="text-3xl font-bold text-gray-900">
                     Bonjour, {user?.firstName ? user.firstName : 'Cher Client'} ! 👋
