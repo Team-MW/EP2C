@@ -316,7 +316,7 @@ export default function ClientDashboard() {
                             <div className="absolute -left-[21px] top-1 w-4 h-4 rounded-full bg-green-500 border-2 border-white shadow-sm"></div>
                             <div className="space-y-1">
                                 <h4 className="text-sm font-bold text-gray-900 leading-none">Dossier Initialisé</h4>
-                                <p className="text-xs text-gray-500">24 Jan 2024 - 09:30</p>
+                                <p className="text-xs text-gray-500">24 Jan 2026 - 09:30</p>
                             </div>
                         </div>
 
@@ -324,7 +324,7 @@ export default function ClientDashboard() {
                             <div className="absolute -left-[21px] top-1 w-4 h-4 rounded-full bg-green-500 border-2 border-white shadow-sm"></div>
                             <div className="space-y-1">
                                 <h4 className="text-sm font-bold text-gray-900 leading-none">Vérification des pièces</h4>
-                                <p className="text-xs text-gray-500">25 Jan 2024 - 14:15</p>
+                                <p className="text-xs text-gray-500">25 Jan 2026 - 14:15</p>
                             </div>
                         </div>
 

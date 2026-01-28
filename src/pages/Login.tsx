@@ -25,7 +25,7 @@ export default function Login() {
                     </div>
 
                     <div className="visual-footer">
-                        <p>© 2024 Efficience EP2C</p>
+                        <p>© 2026 Efficience EP2C</p>
                     </div>
                 </div>
             </div>

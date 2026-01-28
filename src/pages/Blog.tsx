@@ -6,9 +6,9 @@ import { Calendar, User, ArrowRight } from 'lucide-react';
 const blogPosts = [
     {
         id: 1,
-        title: "Comment optimiser la gestion de la paie en 2024 ?",
+        title: "Comment optimiser la gestion de la paie en 2026 ?",
         category: "Pôle Paie",
-        date: "24 Jan 2024",
+        date: "24 Jan 2026",
         author: "Sarah Martin",
         image: "/service_finance.png",
         excerpt: "Découvrez les nouvelles réglementations et nos conseils pour sécuriser vos bulletins de salaire tout en gagnant du temps."
@@ -17,7 +17,7 @@ const blogPosts = [
         id: 2,
         title: "Le management hybride : les clés du succès",
         category: "Management",
-        date: "12 Jan 2024",
+        date: "12 Jan 2026",
         author: "Marc Dubois",
         image: "/service_management.png",
         excerpt: "Télétravail et présentiel : comment maintenir la cohésion et la performance de vos équipes dans un environnement flexible ?"
@@ -26,7 +26,7 @@ const blogPosts = [
         id: 3,
         title: "Pourquoi l'audit social est indispensable",
         category: "Audit",
-        date: "05 Jan 2024",
+        date: "05 Jan 2026",
         author: "Elena Fisher",
         image: "/service_audit.png",
         excerpt: "Anticipez les risques et identifiez les leviers d'amélioration de votre climat social grâce à un diagnostic précis."

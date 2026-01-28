@@ -100,5 +100,55 @@ export const services = [
             "Meilleure gestion du stress et de la charge mentale",
             "Création d'un environnement de travail positif et motivant"
         ]
+    },
+    {
+        id: '05',
+        title: 'Pôle Formation',
+        slug: 'pole-formation',
+        image: '/service_training.png',
+        icon: Lightbulb, // Using Lightbulb as placeholder since GraduationCap wasn't imported
+        description: "Développez les compétences de vos équipes avec nos programmes de formation sur-mesure. Management, RH, Paie, Droit social : nous construisons des parcours adaptés à vos besoins.",
+        details: [
+            "Formations en droit social et actualités de la paie",
+            "Parcours managériaux et leadership",
+            "Formation des membres du CSE (SSCT, économique...)",
+            "Ateliers RH : recrutement, entretien annuel, QVT",
+            "Formation aux outils digitaux RH",
+            "Ingénierie pédagogique sur-mesure",
+            "Bilan de compétences et VAE",
+            "Coaching d'équipe et Team Building"
+        ],
+        benefits: [
+            "Montée en compétences opérationnelle immédiate",
+            "Adaptation aux évolutions légales et métiers",
+            "Motivation et fidélisation des collaborateurs",
+            "Performance accrue des équipes",
+            "Programmes éligibles aux financements (OPCO...)"
+        ]
+    },
+    {
+        id: '06',
+        title: 'Pôle Audit Social',
+        slug: 'pole-audit',
+        image: '/service_audit.png',
+        icon: Brain, // Using Brain as placeholder
+        description: "Sécurisez vos pratiques et identifiez vos risques grâce à un audit social complet. Nous analysons votre conformité légale et conventionnelle pour vous protéger.",
+        details: [
+            "Audit de conformité des bulletins de paie",
+            "Audit des charges sociales et régularisations",
+            "Audit des contrats de travail et procédures",
+            "Audit de la durée du travail et des congés",
+            "Diagnostic des risques psychosociaux (RPS)",
+            "Audit de la protection sociale complémentaire",
+            "Cartographie des risques RH",
+            "Recommandations et plan d'action correctif"
+        ],
+        benefits: [
+            "Sécurisation juridique immédiate",
+            "Optimisation des coûts sociaux",
+            "Prévention des redressements URSSAF",
+            "Vision claire de vos pratiques RH",
+            "Amélioration de la fiabilité des données sociales"
+        ]
     }
 ];

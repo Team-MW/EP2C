@@ -1,4 +1,5 @@
 import { Facebook, Linkedin, Mail, Phone, MapPin, Clock } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import logoImage from '../assets/logo.png';
 
 export default function Footer() {
@@ -25,11 +26,11 @@ export default function Footer() {
                         Liens Rapides
                     </h4>
                     <ul className="space-y-3">
-                        <li><a href="#" className="hover:text-white hover:translate-x-1 transition-all inline-block">Accueil</a></li>
-                        <li><a href="#" className="hover:text-white hover:translate-x-1 transition-all inline-block">À propos de nous</a></li>
-                        <li><a href="#" className="hover:text-white hover:translate-x-1 transition-all inline-block">Nos Services</a></li>
-                        <li><a href="#" className="hover:text-white hover:translate-x-1 transition-all inline-block">Blog & Actualités</a></li>
-                        <li><a href="#" className="hover:text-white hover:translate-x-1 transition-all inline-block">Contact</a></li>
+                        <li><Link to="/" className="hover:text-white hover:translate-x-1 transition-all inline-block">Accueil</Link></li>
+                        <li><Link to="/about" className="hover:text-white hover:translate-x-1 transition-all inline-block">À propos de nous</Link></li>
+                        <li><Link to="/services" className="hover:text-white hover:translate-x-1 transition-all inline-block">Nos Services</Link></li>
+                        <li><Link to="/blog" className="hover:text-white hover:translate-x-1 transition-all inline-block">Blog & Actualités</Link></li>
+                        <li><Link to="/contact" className="hover:text-white hover:translate-x-1 transition-all inline-block">Contact</Link></li>
                     </ul>
                 </div>
 
@@ -39,11 +40,11 @@ export default function Footer() {
                         Nos Pôles
                     </h4>
                     <ul className="space-y-3">
-                        <li><a href="#" className="hover:text-white hover:translate-x-1 transition-all inline-block">Coaching Professionnel</a></li>
-                        <li><a href="#" className="hover:text-white hover:translate-x-1 transition-all inline-block">Ressources Humaines</a></li>
-                        <li><a href="#" className="hover:text-white hover:translate-x-1 transition-all inline-block">Formation</a></li>
-                        <li><a href="#" className="hover:text-white hover:translate-x-1 transition-all inline-block">Audit Social</a></li>
-                        <li><a href="#" className="hover:text-white hover:translate-x-1 transition-all inline-block">Gestion de Paie</a></li>
+                        <li><Link to="/services/pole-coaching" className="hover:text-white hover:translate-x-1 transition-all inline-block">Coaching Professionnel</Link></li>
+                        <li><Link to="/services/pole-ressources-humaines" className="hover:text-white hover:translate-x-1 transition-all inline-block">Ressources Humaines</Link></li>
+                        <li><Link to="/services/pole-formation" className="hover:text-white hover:translate-x-1 transition-all inline-block">Formation</Link></li>
+                        <li><Link to="/services/pole-audit" className="hover:text-white hover:translate-x-1 transition-all inline-block">Audit Social</Link></li>
+                        <li><Link to="/services/pole-paie" className="hover:text-white hover:translate-x-1 transition-all inline-block">Gestion de Paie</Link></li>
                     </ul>
                 </div>
 
@@ -87,8 +88,7 @@ export default function Footer() {
                 <div className="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4 text-xs opacity-60">
                     <p>&copy; 2026 Efficience EP2C. Tous droits réservés.</p>
                     <div className="flex gap-6">
-                        <a href="/mentions-legales" className="hover:text-white transition-colors">Mentions Légales</a>
-                        <a href="#" className="hover:text-white transition-colors">Politique de Confidentialité</a>
+                        <Link to="/mentions-legales" className="hover:text-white transition-colors">Mentions Légales</Link>
                     </div>
                     <div className="flex items-center gap-1">
                         Développé par <a href="https://microdidact.com" target="_blank" rel="noopener noreferrer" className="text-[#1044A9] font-bold hover:underline">Microdidact</a>

@@ -16,15 +16,17 @@ export default function PrendreRDV() {
                 url='https://www.efficience-ep2c.com/prendre-rdv'
             />
             {/* Hero Section */}
-            <div className="relative h-[50vh] min-h-[400px] flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#1044A9] to-[#2563eb]">
-                <div className="absolute inset-0 opacity-10">
-                    <div className="absolute inset-0" style={{ backgroundImage: 'url(/service_hr.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
-                </div>
+            <div className="relative h-[50vh] min-h-[400px] flex items-center justify-center overflow-hidden">
+                <div
+                    className="absolute inset-0 z-0 bg-cover bg-center"
+                    style={{ backgroundImage: 'url(/contact_hero_bg.png)' }}
+                ></div>
+                <div className="absolute inset-0 bg-black/60 z-1"></div>
                 <div className="relative z-10 text-center text-white px-4 max-w-4xl mx-auto">
                     <Reveal>
                         <Calendar size={64} className="mx-auto mb-6" />
                         <h1 className="text-5xl md:text-6xl font-bold mb-6">Prendre Rendez-vous</h1>
-                        <p className="text-xl md:text-2xl font-light text-blue-100">
+                        <p className="text-xl md:text-2xl font-light text-gray-200">
                             Réservez un créneau avec nos experts pour discuter de vos besoins
                         </p>
                     </Reveal>
@@ -40,13 +42,14 @@ export default function PrendreRDV() {
                     <div className="max-w-4xl mx-auto">
                         <Reveal>
                             <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12">
-                                <div className="text-center mb-10">
+                                <div className="text-center mb-0">
                                     <h2 className="text-3xl font-bold text-gray-900 mb-4">Réservez votre consultation</h2>
                                     <p className="text-gray-600">Remplissez le formulaire ci-dessous et nous vous recontacterons dans les plus brefs délais</p>
                                 </div>
 
                                 <iframe
-                                    data-tally-src="https://tally.so/r/1A9jVQ?transparentBackground=1"
+                                    data-tally-src="https://tally.so/r/1A9jVQ?transparentBackground=1&hideTitle=1"
+                                    className="w-full -mt-8"
                                     width="100%"
                                     height="500"
                                     frameBorder="0"
