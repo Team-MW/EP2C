@@ -225,18 +225,22 @@ app.post('/api/documents', upload.single('file'), async (req, res) => {
                     process.env.EMAILJS_SERVICE_ID,
                     "template_upload_notification", // REPLACE THIS WITH YOUR TEMPLATE ID
                     {
-                        doc_name: file.originalname,
-                        user_email: user ? user.email : 'Inconnu',
                         user_name: user ? `${user.firstName} ${user.lastName}` : 'Client',
+                        user_email: user ? user.email : 'email@inconnu.com',
+                        time: new Date().toLocaleString('fr-FR', {
+                            dateStyle: 'short',
+                            timeStyle: 'short'
+                        }),
+                        doc_name: file.originalname,
                         doc_link: result.secure_url,
-                        message: `Nouveau document déposé par ${user ? user.company : 'un client'}`
+                        message: `Nouveau document déposé par ${user?.company || 'un client'} - Société: ${user?.company || 'Non renseignée'}`
                     },
                     {
                         publicKey: process.env.EMAILJS_PUBLIC_KEY,
                         privateKey: process.env.EMAILJS_PRIVATE_KEY,
                     }
                 );
-                console.log("Email notification sent!");
+                console.log("✅ Email notification sent successfully!");
             } catch (err) {
                 console.error("Failed to send email notification:", err);
             }
