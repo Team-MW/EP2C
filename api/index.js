@@ -21,6 +21,7 @@ cloudinary.config({
 
 // Configure Clerk (Auto-loads from CLERK_SECRET_KEY in .env)
 import clerk from '@clerk/clerk-sdk-node';
+import emailjs from '@emailjs/nodejs';
 
 // Multer (Memory Storage for Serverless)
 const upload = multer({ storage: multer.memoryStorage() });
@@ -214,6 +215,32 @@ app.post('/api/documents', upload.single('file'), async (req, res) => {
                 userId: parseInt(userId)
             }
         });
+
+        // 4c. Send Email Notification (Async - don't block response)
+        (async () => {
+            try {
+                const user = await prisma.user.findUnique({ where: { id: parseInt(userId) } });
+
+                await emailjs.send(
+                    process.env.EMAILJS_SERVICE_ID,
+                    "template_upload_notification", // REPLACE THIS WITH YOUR TEMPLATE ID
+                    {
+                        doc_name: file.originalname,
+                        user_email: user ? user.email : 'Inconnu',
+                        user_name: user ? `${user.firstName} ${user.lastName}` : 'Client',
+                        doc_link: result.secure_url,
+                        message: `Nouveau document déposé par ${user ? user.company : 'un client'}`
+                    },
+                    {
+                        publicKey: process.env.EMAILJS_PUBLIC_KEY,
+                        privateKey: process.env.EMAILJS_PRIVATE_KEY,
+                    }
+                );
+                console.log("Email notification sent!");
+            } catch (err) {
+                console.error("Failed to send email notification:", err);
+            }
+        })();
 
         res.json(doc);
 
