@@ -17,15 +17,15 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 <RedirectToSignIn />
             </SignedOut>
             <SignedIn>
-                <div className="flex h-screen bg-gray-50 font-sans">
+                <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
                     {/* Sidebar */}
-                    <aside className="w-72 bg-white border-r border-gray-200 flex flex-col">
-                        <div className="p-8 border-b border-gray-100">
+                    <aside className="w-72 min-w-[18rem] shrink-0 bg-white border-r border-gray-200 flex flex-col z-10 transition-all duration-300 relative">
+                        <div className="p-8 border-b border-gray-100 flex-shrink-0">
                             <h1 className="text-2xl font-bold text-[#1044A9]">Efficience EP2C</h1>
                             <p className="text-xs text-gray-400 mt-1 uppercase tracking-wider font-semibold">Espace Client</p>
                         </div>
 
-                        <nav className="flex-1 p-6 space-y-2">
+                        <nav className="flex-1 p-6 space-y-2 overflow-y-auto">
                             <Link to="/panel" className="flex items-center gap-4 px-4 py-3.5 text-gray-600 hover:bg-blue-50 hover:text-[#1044A9] rounded-xl transition-all duration-200 font-medium group">
                                 <LayoutDashboard size={22} className="group-hover:scale-105 transition-transform" />
                                 <span>Vue d'ensemble</span>
@@ -33,10 +33,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                             <Link to="/panel/documents" className="flex items-center gap-4 px-4 py-3.5 text-gray-600 hover:bg-blue-50 hover:text-[#1044A9] rounded-xl transition-all duration-200 font-medium group">
                                 <FileText size={22} className="group-hover:scale-105 transition-transform" />
                                 <span>Mes Documents</span>
-                            </Link>
-                            <Link to="/panel/settings" className="flex items-center gap-4 px-4 py-3.5 text-gray-600 hover:bg-blue-50 hover:text-[#1044A9] rounded-xl transition-all duration-200 font-medium group">
-                                <Settings size={22} className="group-hover:scale-105 transition-transform" />
-                                <span>Paramètres</span>
                             </Link>
                         </nav>
 

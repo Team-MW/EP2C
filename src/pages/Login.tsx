@@ -43,7 +43,8 @@ export default function Login() {
                                 footerActionLink: "text-[#1044A9] hover:text-[#0d3685]"
                             }
                         }}
-                        signUpUrl="/contact" // Redirect sign ups to contact or disable
+                        signUpUrl="/contact"
+                        afterSignInUrl="/panel"
                     />
 
                 </div>

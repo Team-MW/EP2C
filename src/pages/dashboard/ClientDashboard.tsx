@@ -1,9 +1,97 @@
 import DashboardLayout from '../../layouts/DashboardLayout';
 import { useUser } from '@clerk/clerk-react';
-import { FileCheck, Clock, AlertCircle, ArrowRight, FileText } from 'lucide-react';
+import { FileCheck, Clock, AlertCircle, ArrowRight, FileText, Upload } from 'lucide-react';
+import { useState, useEffect } from 'react';
+
+// Define types for our DB data
+interface DbDocument {
+    id: number;
+    name: string;
+    type: string;
+    size: string;
+    status: string;
+    createdAt: string;
+}
 
 export default function ClientDashboard() {
     const { user } = useUser();
+    const [dbUser, setDbUser] = useState<any>(null);
+    const [documents, setDocuments] = useState<DbDocument[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    // 1. Sync User with DB on Load AND Fetch Documents
+    useEffect(() => {
+        if (!user) return;
+
+        const syncUser = async () => {
+            try {
+                // Sync User
+                const res = await fetch('/api/users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        clerkId: user.id,
+                        email: user.primaryEmailAddress?.emailAddress,
+                        firstName: user.firstName,
+                        lastName: user.lastName,
+                        role: 'client'
+                    })
+                });
+                const userData = await res.json();
+                setDbUser(userData);
+
+                // Fetch Documents
+                const docsRes = await fetch(`/api/users/${user.id}/documents`);
+                if (docsRes.ok) {
+                    const docs = await docsRes.json();
+                    setDocuments(docs);
+                }
+            } catch (err) {
+                console.error("Error syncing user:", err);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        syncUser();
+    }, [user]);
+
+    // 2. Handle "Upload" (Simulation of adding file metadata to DB)
+    const handleSimulatedUpload = async () => {
+        if (!dbUser) return;
+
+        // Simulate a file selection
+        const fakeFiles = [
+            { name: "Kbis_2024.pdf", type: "PDF", size: "1.2 MB" },
+            { name: "Identite_RectoVerso.jpg", type: "JPG", size: "3.5 MB" },
+            { name: "Releve_Bancaire.pdf", type: "PDF", size: "0.8 MB" }
+        ];
+
+        // Pick random file
+        const file = fakeFiles[Math.floor(Math.random() * fakeFiles.length)];
+
+        try {
+            const res = await fetch('/api/documents', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: dbUser.id,
+                    name: file.name,
+                    type: file.type,
+                    size: file.size
+                })
+            });
+
+            if (res.ok) {
+                const newDoc = await res.json();
+                setDocuments([newDoc, ...documents]);
+                alert(`Document "${file.name}" ajouté au dossier !`);
+            }
+        } catch (err) {
+            console.error("Upload error:", err);
+            alert("Erreur lors de l'envoi");
+        }
+    };
 
     return (
         <DashboardLayout>
@@ -35,8 +123,8 @@ export default function ClientDashboard() {
                             <FileCheck size={24} className="text-indigo-600" />
                         </div>
                     </div>
-                    <div className="text-3xl font-bold text-gray-900 mb-1">3</div>
-                    <div className="text-gray-500 text-sm">Documents validés cette semaine</div>
+                    <div className="text-3xl font-bold text-gray-900 mb-1">{documents.filter(d => d.status === 'Validé').length}</div>
+                    <div className="text-gray-500 text-sm">Documents validés</div>
                 </div>
 
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
@@ -48,6 +136,27 @@ export default function ClientDashboard() {
                     </div>
                     <div className="text-3xl font-bold text-gray-900 mb-1">1</div>
                     <div className="text-gray-500 text-sm">Document manquant (KBIS)</div>
+                </div>
+            </div>
+
+            {/* Upload Section - PRIMARY ACTION */}
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-blue-100 mb-10 text-center relative overflow-hidden group">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-[#1044A9]"></div>
+
+                <h3 className="text-xl font-bold text-gray-900 mb-2">Déposer vos documents</h3>
+                <p className="text-gray-500 mb-8 max-w-lg mx-auto">
+                    Glissez-déposez vos fichiers ici (PDF, JPG) ou cliquez pour parcourir.
+                    <br /><span className="text-sm text-gray-400">Pour tout dossier de création ou de modification.</span>
+                </p>
+
+                <div
+                    className="border-3 border-dashed border-blue-100 rounded-xl p-10 bg-blue-50/50 hover:bg-blue-50 hover:border-blue-300 transition-all cursor-pointer group-hover:scale-[1.01]"
+                    onClick={handleSimulatedUpload}
+                >
+                    <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm text-[#1044A9]">
+                        <Upload size={32} />
+                    </div>
+                    <span className="font-semibold text-[#1044A9]">Cliquez pour ajouter des fichiers (Simulation)</span>
                 </div>
             </div>
 
@@ -96,31 +205,34 @@ export default function ClientDashboard() {
 
                 {/* Recent Documents */}
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 flex flex-col">
-                    <h3 className="text-xl font-bold text-gray-900 mb-6">Documents Récents</h3>
+                    <h3 className="text-xl font-bold text-gray-900 mb-6">Documents Transmis</h3>
 
-                    <div className="space-y-4 mb-6 flex-1">
-                        {[
-                            { name: 'Contrat_Prestation.pdf', size: '2.4 MB', type: 'PDF' },
-                            { name: 'Attestation_Sociale.pdf', size: '1.1 MB', type: 'PDF' },
-                            { name: 'Devis_Signe.jpg', size: '4.8 MB', type: 'IMG' },
-                        ].map((doc, i) => (
-                            <div key={i} className="flex items-center p-3 hover:bg-gray-50 rounded-lg transition-colors border border-gray-50 hover:border-gray-200">
-                                <div className="w-10 h-10 rounded-lg bg-red-50 text-red-600 flex items-center justify-center mr-4">
-                                    <FileText size={20} />
+                    {documents.length === 0 ? (
+                        <div className="text-center py-10 text-gray-400 bg-gray-50 rounded-lg">
+                            <FileText size={48} className="mx-auto mb-2 opacity-50" />
+                            <p>Aucun document transmis pour le moment</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-4 mb-6 flex-1 overflow-y-auto max-h-[300px]">
+                            {documents.map((doc) => (
+                                <div key={doc.id} className="flex items-center p-3 hover:bg-gray-50 rounded-lg transition-colors border border-gray-50 hover:border-gray-200">
+                                    <div className="w-10 h-10 rounded-lg bg-blue-50 text-[#1044A9] flex items-center justify-center mr-4">
+                                        <FileText size={20} />
+                                    </div>
+                                    <div className="flex-1">
+                                        <h4 className="text-sm font-semibold text-gray-900">{doc.name}</h4>
+                                        <p className="text-xs text-gray-500">{doc.size} • {doc.type}</p>
+                                    </div>
+                                    <div className="text-green-600">
+                                        <FileCheck size={18} />
+                                    </div>
                                 </div>
-                                <div className="flex-1">
-                                    <h4 className="text-sm font-semibold text-gray-900">{doc.name}</h4>
-                                    <p className="text-xs text-gray-500">{doc.size} • {doc.type}</p>
-                                </div>
-                                <button className="text-gray-400 hover:text-[#1044A9]">
-                                    <ArrowRight size={18} />
-                                </button>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    )}
 
-                    <button className="w-full py-3 bg-gray-50 text-gray-600 font-semibold rounded-xl hover:bg-gray-100 transition-colors text-sm">
-                        Voir tous les documents
+                    <button className="w-full py-3 bg-gray-50 text-gray-600 font-semibold rounded-xl hover:bg-gray-100 transition-colors text-sm mt-auto">
+                        Voir l'historique complet
                     </button>
                 </div>
             </div>

@@ -1,0 +1,37 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  clerkId   String   @unique // Link to Clerk
+  email     String   @unique
+  firstName String?
+  lastName  String?
+  role      String   @default("client") // client, admin
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  company   String?
+  status    String   @default("En attente")
+
+  documents Document[]
+}
+
+model Document {
+  id        Int      @id @default(autoincrement())
+  name      String
+  type      String   // PDF, JPG...
+  size      String
+  url       String?  // URL to file storage
+  status    String   @default("En attente") // En attente, Validé, Rejeté
+  createdAt DateTime @default(now())
+  
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+}
