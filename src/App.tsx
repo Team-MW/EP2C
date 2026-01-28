@@ -9,6 +9,7 @@ import ServicesPage from './pages/ServicesPage';
 import Blog from './pages/Blog';
 import ServiceDetail from './pages/ServiceDetail';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import PrendreRDV from './pages/PrendreRDV';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/services" element={<ServicesPage />} />
         <Route path="/blog" element={<Blog />} />
         <Route path="/services/:slug" element={<ServiceDetail />} />
+        <Route path="/prendre-rdv" element={<PrendreRDV />} />
 
         {/* Dashboard Routes  - Protected in   real app */}
         <Route path="/panel" element={<ClientDashboard />} />

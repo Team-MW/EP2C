@@ -1,4 +1,5 @@
 import { Facebook, Linkedin, Twitter, Mail, Phone, MapPin, Clock } from 'lucide-react';
+import logoImage from '../assets/logo.png';
 
 export default function Footer() {
     return (
@@ -7,7 +8,7 @@ export default function Footer() {
 
                 {/* About */}
                 <div className="footer-col about">
-                    <h3 className="footer-logo">Efficience EP2C</h3>
+                    <img src={logoImage} alt="Efficience EP2C" style={{ height: '50px', width: 'auto', marginBottom: '1rem' }} />
                     <p className="footer-desc">
                         Votre partenaire privilégié pour optimiser la performance opérationnelle de votre entreprise à travers des solutions RH et managériales sur mesure.
                     </p>

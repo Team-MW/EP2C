@@ -1,4 +1,5 @@
 import { Phone, Mail, MapPin } from 'lucide-react';
+import logoImage from '../assets/logo.png';
 
 export default function Header() {
     return (
@@ -6,16 +7,11 @@ export default function Header() {
             <div className="container header-container">
                 {/* Logo Section */}
                 <a href="/" className="logo-section" style={{ textDecoration: 'none', cursor: 'pointer' }}>
-                    <h1 className="logo-title">Efficience</h1>
-                    <div className="logo-subtitle">
-                        <span>Expertise Paie/RH</span>
-                        <span>Conseil & Coaching</span>
-                        <span>aux entreprises</span>
-                    </div>
+                    <img src={logoImage} alt="Efficience EP2C - Expertise Paie/RH, Conseil & Coaching" className="logo-image" style={{ height: '60px', width: 'auto' }} />
                 </a>
 
-                {/* Contact Info Section */}
-                <div className="contact-section">
+                {/* Contact Info Section - Hidden on Mobile */}
+                <div className="contact-section hidden md:flex">
 
                     <div className="contact-item">
                         <div className="icon-circle">

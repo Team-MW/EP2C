@@ -91,6 +91,23 @@ export default function ServiceDetail() {
                         </Reveal>
 
                     </div>
+
+                    {/* Benefits Section */}
+                    {service.benefits && service.benefits.length > 0 && (
+                        <Reveal delay="delay-200">
+                            <div className="mt-16 bg-gradient-to-br from-[#1044A9] to-[#2563eb] p-10 rounded-2xl text-white shadow-xl">
+                                <h3 className="text-2xl font-bold mb-6">Vos bénéfices</h3>
+                                <ul className="space-y-4">
+                                    {service.benefits.map((benefit, idx) => (
+                                        <li key={idx} className="flex items-start gap-4">
+                                            <CheckCircle className="text-white shrink-0 mt-1" size={20} />
+                                            <span className="text-white/90 font-medium">{benefit}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </Reveal>
+                    )}
                 </div>
             </div>
 

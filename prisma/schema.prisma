@@ -717,3 +717,18 @@ enum d_order_takeout {
   takeaway
   deliver
 }
+
+model Appointment {
+  id          Int      @id @default(autoincrement())
+  nom         String
+  prenom      String
+  email       String
+  telephone   String
+  entreprise  String?
+  service     String
+  date        String
+  heure       String
+  message     String?  @db.Text
+  status      String   @default("Nouveau") // Nouveau, Traité, Archivé
+  createdAt   DateTime @default(now())
+}

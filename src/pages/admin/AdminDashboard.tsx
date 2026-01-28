@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useUser, useClerk } from '@clerk/clerk-react';
-import { Users, Search, Bell, LogOut, ChevronRight, ExternalLink, UserPlus, X, CheckCircle, Loader, FileText, Trash2 } from 'lucide-react';
+import { Users, Search, Bell, LogOut, ChevronRight, ExternalLink, UserPlus, X, CheckCircle, Loader, FileText, Trash2, Lock, Unlock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './admin.css';
 
@@ -43,6 +43,24 @@ export default function AdminDashboard() {
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    // Auth State
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [pinCode, setPinCode] = useState('');
+    const [error, setError] = useState('');
+
+    const handlePinSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        // Code PIN codé en dur pour la démo - À changer pour une variable d'env en prod
+        if (pinCode === '12345') {
+            setIsAuthenticated(true);
+            setError('');
+        } else {
+            setError('Code incorrect');
+            setPinCode('');
+        }
+    };
 
     useEffect(() => {
         fetchUsers();
@@ -59,7 +77,6 @@ export default function AdminDashboard() {
             }
         } catch (error) {
             console.warn("Failed to fetch users - backend may not be running", error);
-            // Ne pas afficher d'erreur à l'utilisateur si le backend n'est pas démarré
         }
     };
 
@@ -93,7 +110,6 @@ export default function AdminDashboard() {
                 setShowCreateForm(false);
                 setShowSuccess(true);
 
-                // Masquer la popup de succès après 3 secondes
                 setTimeout(() => {
                     setShowSuccess(false);
                 }, 3000);
@@ -144,14 +160,12 @@ export default function AdminDashboard() {
             });
 
             if (res.ok) {
-                // Update the selected user's documents
                 if (selectedUser) {
                     setSelectedUser({
                         ...selectedUser,
                         documents: selectedUser.documents.filter(d => d.id !== docId)
                     });
                 }
-                // Update the users list
                 setUsers(users.map(u => {
                     if (u.id === selectedUser?.id) {
                         return {
@@ -171,7 +185,6 @@ export default function AdminDashboard() {
         }
     };
 
-
     const filteredUsers = users.filter(u =>
         (u.firstName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
         (u.lastName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
@@ -180,17 +193,74 @@ export default function AdminDashboard() {
 
     if (!isLoaded) return <div className="flex items-center justify-center h-screen">Chargement...</div>;
 
+    // PIN Protection Screen
+    if (!isAuthenticated) {
+        return (
+            <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+                <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full text-center">
+                    <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <Lock className="text-[#1044A9]" size={40} />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Accès Administrateur</h2>
+                    <p className="text-gray-500 mb-8">Veuillez entrer le code de sécurité pour accéder au tableau de bord.</p>
+
+                    <form onSubmit={handlePinSubmit} className="space-y-4">
+                        <div>
+                            <input
+                                type="password"
+                                value={pinCode}
+                                onChange={(e) => setPinCode(e.target.value)}
+                                className="w-full text-center text-2xl tracking-widest font-bold py-3 border-2 border-gray-200 rounded-xl focus:border-[#1044A9] focus:ring-0 outline-none transition-colors"
+                                placeholder="•••••"
+                                autoFocus
+                                maxLength={5}
+                            />
+                        </div>
+                        {error && <p className="text-red-500 text-sm font-medium animate-pulse">{error}</p>}
+
+                        <button
+                            type="submit"
+                            className="w-full group relative flex items-center justify-center gap-2 py-4 bg-gray-900 text-white font-bold text-lg rounded-xl hover:bg-black transition-all duration-300 shadow-md hover:shadow-xl transform hover:-translate-y-0.5"
+                        >
+                            <span>Déverrouiller</span>
+                            <Unlock size={20} className="opacity-70 group-hover:opacity-100 transition-opacity" />
+                        </button>
+                    </form>
+
+                    <button onClick={() => navigate('/')} className="mt-6 text-sm text-gray-400 hover:text-gray-600">
+                        Retour à l'accueil
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    // Modification du return pour inclure la sidebar responsive
     return (
-        <div className="admin-layout flex h-screen bg-gray-50 text-gray-800 font-sans">
+        <div className="admin-layout flex h-screen bg-gray-50 text-gray-800 font-sans overflow-hidden">
+            {/* Mobile Sidebar Overlay */}
+            {isMobileMenuOpen && (
+                <div
+                    className="fixed inset-0 bg-black/50 z-30 md:hidden animate-in fade-in duration-200"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                />
+            )}
+
             {/* Sidebar */}
-            <aside className="w-64 bg-white border-r border-gray-200 flex flex-col shrink-0 z-20">
-                <div className="h-16 flex items-center px-6 border-b border-gray-100">
+            <aside className={`
+                fixed md:static inset-y-0 left-0 bg-white border-r border-gray-200 flex flex-col shrink-0 z-40 w-64 transform transition-transform duration-300 ease-in-out
+                ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+            `}>
+                <div className="h-16 flex items-center justify-between px-6 border-b border-gray-100">
                     <span className="text-xl font-bold text-[#1044A9]">EP2C Admin</span>
+                    <button className="md:hidden text-gray-500" onClick={() => setIsMobileMenuOpen(false)}>
+                        <X size={20} />
+                    </button>
                 </div>
 
-                <nav className="flex-1 p-4 space-y-1">
+                <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
                     <div className="px-2 py-3 text-xs font-semibold text-gray-400 uppercase tracking-wider">Menu Principal</div>
-                    <button onClick={() => setSelectedUser(null)} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${!selectedUser ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50'}`}>
+                    <button onClick={() => { setSelectedUser(null); setIsMobileMenuOpen(false); }} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${!selectedUser ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-50'}`}>
                         <Users size={18} />
                         Gestion Clients
                     </button>
@@ -207,9 +277,18 @@ export default function AdminDashboard() {
             {/* Main Content */}
             <main className="flex-1 flex flex-col overflow-hidden relative">
                 {/* Header */}
-                <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8 shrink-0">
-                    <div className="text-lg font-semibold text-gray-800">
-                        {selectedUser ? `Dossier : ${selectedUser.firstName} ${selectedUser.lastName}` : 'Vue d\'ensemble'}
+                <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 md:px-8 shrink-0">
+                    <div className="flex items-center gap-3">
+                        <button className="md:hidden p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-lg" onClick={() => setIsMobileMenuOpen(true)}>
+                            <div className="space-y-1.5">
+                                <span className="block w-6 h-0.5 bg-current"></span>
+                                <span className="block w-6 h-0.5 bg-current"></span>
+                                <span className="block w-6 h-0.5 bg-current"></span>
+                            </div>
+                        </button>
+                        <div className="text-lg font-semibold text-gray-800 truncate max-w-[200px] md:max-w-none">
+                            {selectedUser ? `Dossier : ${selectedUser.firstName} ${selectedUser.lastName}` : 'Vue d\'ensemble'}
+                        </div>
                     </div>
                     <div className="flex items-center gap-4">
                         <button className="relative p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors">
@@ -252,7 +331,7 @@ export default function AdminDashboard() {
                                         </button>
                                     </div>
                                 </div>
-                                <div className="p-6 grid grid-cols-3 gap-6">
+                                <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
                                     <div>
                                         <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1">Société</label>
                                         <p className="text-gray-900 font-medium">{selectedUser.company || 'Non renseigné'}</p>
@@ -336,7 +415,7 @@ export default function AdminDashboard() {
                         // USER LIST VIEW
                         <>
                             <div className="mb-8">
-                                <div className="flex items-start justify-between mb-6">
+                                <div className="flex flex-col md:flex-row md:items-start justify-between mb-6 gap-4">
                                     <div>
                                         <h1 className="text-2xl font-bold text-gray-900">Clients</h1>
                                         <p className="text-gray-500 mt-1">Gérez vos clients et accédez à leurs dossiers.</p>
@@ -386,7 +465,7 @@ export default function AdminDashboard() {
                                             </button>
                                         </div>
                                         <form onSubmit={handleCreateUser} className="p-6 space-y-4">
-                                            <div className="grid grid-cols-2 gap-4">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <div className="space-y-1">
                                                     <label className="text-sm font-medium text-gray-700">Prénom</label>
                                                     <input required name="firstName" className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none" placeholder="Thomas" />
@@ -415,79 +494,81 @@ export default function AdminDashboard() {
                             )}
 
                             <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                                <table className="w-full text-left border-collapse">
-                                    <thead className="bg-gray-50/80 text-gray-500 text-xs uppercase tracking-wider font-semibold border-b border-gray-200">
-                                        <tr>
-                                            <th className="px-6 py-4">Client</th>
-                                            <th className="px-6 py-4">ID Clerk / Email</th>
-                                            <th className="px-6 py-4">Statut</th>
-                                            <th className="px-6 py-4 text-center">Docs</th>
-                                            <th className="px-6 py-4 text-right">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-gray-100">
-                                        {filteredUsers.length > 0 ? filteredUsers.map(u => (
-                                            <tr
-                                                key={u.id}
-                                                onClick={() => setSelectedUser(u)}
-                                                className="hover:bg-blue-50/30 transition-colors cursor-pointer group"
-                                            >
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 font-bold text-sm group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors">
-                                                            {u.firstName?.charAt(0) || u.email.charAt(0)}
-                                                        </div>
-                                                        <div>
-                                                            <div className="font-semibold text-gray-900">{u.firstName} {u.lastName || ''}</div>
-                                                            <div className="text-xs text-gray-400">{u.company}</div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="text-sm text-gray-600">{u.email}</div>
-                                                    <div className="text-[10px] text-gray-400 font-mono mt-0.5" title={u.clerkId}>{u.clerkId.substring(0, 15)}...</div>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${u.status === 'Validé' ? 'bg-green-50 text-green-700' : 'bg-yellow-50 text-yellow-700'}`}>
-                                                        <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${u.status === 'Validé' ? 'bg-green-500' : 'bg-yellow-500'}`}></span>
-                                                        {u.status}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 text-center">
-                                                    <span className={`inline-flex items-center justify-center min-w-[2rem] h-6 rounded px-1.5 text-xs font-bold ${u.documents?.length > 0 ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}`}>
-                                                        {u.documents?.length || 0}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 text-right">
-                                                    <div className="flex items-center justify-end gap-2">
-                                                        <button
-                                                            onClick={() => setSelectedUser(u)}
-                                                            className="text-gray-400 hover:text-blue-600 p-1 rounded-md hover:bg-blue-50 transition-all"
-                                                        >
-                                                            <ChevronRight size={20} />
-                                                        </button>
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                handleDeleteUser(u.id, `${u.firstName} ${u.lastName}`);
-                                                            }}
-                                                            className="text-red-400 hover:text-red-600 p-1 rounded-md hover:bg-red-50 transition-all"
-                                                            title="Supprimer le client"
-                                                        >
-                                                            <Trash2 size={18} />
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        )) : (
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left border-collapse">
+                                        <thead className="bg-gray-50/80 text-gray-500 text-xs uppercase tracking-wider font-semibold border-b border-gray-200">
                                             <tr>
-                                                <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
-                                                    Aucun client trouvé.
-                                                </td>
+                                                <th className="px-6 py-4">Client</th>
+                                                <th className="px-6 py-4">ID Clerk / Email</th>
+                                                <th className="px-6 py-4">Statut</th>
+                                                <th className="px-6 py-4 text-center">Docs</th>
+                                                <th className="px-6 py-4 text-right">Action</th>
                                             </tr>
-                                        )}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-100">
+                                            {filteredUsers.length > 0 ? filteredUsers.map(u => (
+                                                <tr
+                                                    key={u.id}
+                                                    onClick={() => setSelectedUser(u)}
+                                                    className="hover:bg-blue-50/30 transition-colors cursor-pointer group"
+                                                >
+                                                    <td className="px-6 py-4">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 font-bold text-sm group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors">
+                                                                {u.firstName?.charAt(0) || u.email.charAt(0)}
+                                                            </div>
+                                                            <div>
+                                                                <div className="font-semibold text-gray-900">{u.firstName} {u.lastName || ''}</div>
+                                                                <div className="text-xs text-gray-400">{u.company}</div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <div className="text-sm text-gray-600">{u.email}</div>
+                                                        <div className="text-[10px] text-gray-400 font-mono mt-0.5" title={u.clerkId}>{u.clerkId.substring(0, 15)}...</div>
+                                                    </td>
+                                                    <td className="px-6 py-4">
+                                                        <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${u.status === 'Validé' ? 'bg-green-50 text-green-700' : 'bg-yellow-50 text-yellow-700'}`}>
+                                                            <span className={`w-1.5 h-1.5 rounded-full mr-1.5 ${u.status === 'Validé' ? 'bg-green-500' : 'bg-yellow-500'}`}></span>
+                                                            {u.status}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-center">
+                                                        <span className={`inline-flex items-center justify-center min-w-[2rem] h-6 rounded px-1.5 text-xs font-bold ${u.documents?.length > 0 ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}`}>
+                                                            {u.documents?.length || 0}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-right">
+                                                        <div className="flex items-center justify-end gap-2">
+                                                            <button
+                                                                onClick={() => setSelectedUser(u)}
+                                                                className="text-gray-400 hover:text-blue-600 p-1 rounded-md hover:bg-blue-50 transition-all"
+                                                            >
+                                                                <ChevronRight size={20} />
+                                                            </button>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleDeleteUser(u.id, `${u.firstName} ${u.lastName}`);
+                                                                }}
+                                                                className="text-red-400 hover:text-red-600 p-1 rounded-md hover:bg-red-50 transition-all"
+                                                                title="Supprimer le client"
+                                                            >
+                                                                <Trash2 size={18} />
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            )) : (
+                                                <tr>
+                                                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                                                        Aucun client trouvé.
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </>
                     )}

@@ -1,4 +1,4 @@
-import { Wallet, Users, GraduationCap, Brain, FileSearch, TrendingUp } from 'lucide-react';
+import { Wallet, Users, Lightbulb, Brain } from 'lucide-react';
 
 export const services = [
     {
@@ -7,12 +7,23 @@ export const services = [
         slug: 'pole-paie',
         image: '/service_finance.png',
         icon: Wallet,
-        description: "Externalisez votre gestion de la paie pour plus de fiabilité et de sérénité. Nos experts s'occupent de tout, de l'édition des bulletins aux déclarations sociales.",
+        description: "Externalisez votre gestion de la paie en toute sérénité. Notre équipe d'experts garantit la fiabilité, la conformité et la confidentialité de vos données sociales.",
         details: [
-            "Établissement des bulletins de paie",
-            "Déclarations sociales (DSN)",
-            "Gestion des congés et absences",
-            "Veille juridique et sociale"
+            "Établissement et édition des bulletins de paie conformes",
+            "Déclarations sociales mensuelles (DSN, URSSAF, retraite)",
+            "Gestion administrative des entrées et sorties",
+            "Gestion des congés, absences et temps de travail",
+            "Veille juridique et réglementaire permanente",
+            "Accompagnement lors des contrôles URSSAF",
+            "Tableau de bord social et reporting personnalisé",
+            "Dématérialisation et coffre-fort numérique"
+        ],
+        benefits: [
+            "Gain de temps et concentration sur votre cœur de métier",
+            "Sécurisation juridique et conformité garantie",
+            "Réduction des risques d'erreurs et de sanctions",
+            "Expertise pointue et mise à jour permanente",
+            "Confidentialité et protection des données"
         ]
     },
     {
@@ -21,26 +32,48 @@ export const services = [
         slug: 'pole-ressources-humaines',
         image: '/service_hr.png',
         icon: Users,
-        description: "Optimisez votre capital humain avec nos solutions RH sur-mesure. Du recrutement à la gestion des carrières, nous vous accompagnons à chaque étape.",
+        description: "Optimisez la gestion de votre capital humain avec nos solutions RH sur-mesure. De l'administration du personnel au développement des talents, nous vous accompagnons dans toutes vos problématiques RH.",
         details: [
-            "Recrutement et intégration",
-            "Gestion administrative du personnel",
-            "Relations sociales et CSE",
-            "Marque employeur"
+            "Administration du personnel et dossiers individuels",
+            "Gestion des contrats de travail et avenants",
+            "Procédures disciplinaires et ruptures conventionnelles",
+            "Relations avec les instances représentatives (CSE)",
+            "Élaboration et suivi des entretiens professionnels",
+            "Gestion prévisionnelle des emplois et compétences (GPEC)",
+            "Politique de rémunération et avantages sociaux",
+            "Mise en conformité réglementaire (RGPD, index égalité...)"
+        ],
+        benefits: [
+            "Structuration et professionnalisation de votre fonction RH",
+            "Amélioration du climat social et de la QVT",
+            "Fidélisation des talents et réduction du turnover",
+            "Conformité juridique et prévention des contentieux",
+            "Développement de la marque employeur"
         ]
     },
     {
         id: '03',
-        title: 'Pôle Formation',
-        slug: 'pole-formation',
+        title: 'Pôle Conseil',
+        slug: 'pole-conseil',
         image: '/service_training.png',
-        icon: GraduationCap,
-        description: "Développez les compétences de vos équipes grâce à nos programmes de formation adaptés aux enjeux de votre secteur.",
+        icon: Lightbulb,
+        description: "Bénéficiez d'un accompagnement stratégique pour optimiser votre organisation, améliorer vos performances et anticiper les transformations. Nos consultants vous apportent leur expertise métier et leur vision externe.",
         details: [
-            "Ingénierie de formation",
-            "Formations management et soft skills",
-            "Formations techniques et réglementaires",
-            "Gestion des financements (OPCO)"
+            "Diagnostic organisationnel et audit social",
+            "Conseil en stratégie RH et transformation",
+            "Optimisation des processus et de l'organisation",
+            "Conduite du changement et gestion de projet",
+            "Mise en place d'outils de pilotage RH",
+            "Accompagnement à la digitalisation RH",
+            "Conseil en relations sociales et négociation",
+            "Élaboration de politiques RH (mobilité, formation, diversité...)"
+        ],
+        benefits: [
+            "Vision externe et objective de votre organisation",
+            "Identification des leviers de performance",
+            "Accompagnement personnalisé et pragmatique",
+            "Transfert de compétences et montée en autonomie",
+            "Solutions innovantes et adaptées à vos enjeux"
         ]
     },
     {
@@ -49,40 +82,23 @@ export const services = [
         slug: 'pole-coaching',
         image: '/service_coaching.png',
         icon: Brain,
-        description: "Libérez le potentiel de vos dirigeants et managers à travers un accompagnement individuel ou collectif personnalisé.",
+        description: "Révélez le potentiel de vos dirigeants, managers et équipes grâce à un accompagnement personnalisé. Nos coachs certifiés vous aident à développer vos compétences, votre leadership et votre performance collective.",
         details: [
-            "Coaching de dirigeants",
-            "Coaching d'équipe",
-            "Gestion du stress et des conflits",
-            "Développement du leadership"
-        ]
-    },
-    {
-        id: '05',
-        title: 'Pôle Audit',
-        slug: 'pole-audit',
-        image: '/service_audit.png',
-        icon: FileSearch,
-        description: "Identifiez vos risques et opportunités grâce à nos audits complets (social, organisationnel, conformité).",
-        details: [
-            "Audit de conformité sociale",
-            "Audit organisationnel",
-            "Cartographie des risques",
-            "Recommandations stratégiques"
-        ]
-    },
-    {
-        id: '06',
-        title: 'Pôle Management et Transformation',
-        slug: 'pole-management-transformation',
-        image: '/service_management.png',
-        icon: TrendingUp,
-        description: "Accompagnez le changement et transformez votre organisation pour gagner en agilité et en performance.",
-        details: [
-            "Conduite du changement",
-            "Réorganisation de services",
-            "Optimisation des processus",
-            "Projets d'entreprise"
+            "Coaching individuel de dirigeants et managers",
+            "Coaching d'équipe et cohésion collective",
+            "Développement du leadership et de la posture managériale",
+            "Gestion du stress et prévention des risques psychosociaux",
+            "Accompagnement à la prise de poste",
+            "Gestion des conflits et médiation",
+            "Préparation aux entretiens et prises de parole",
+            "Bilan de compétences et orientation professionnelle"
+        ],
+        benefits: [
+            "Développement des soft skills et de l'intelligence émotionnelle",
+            "Amélioration de la performance individuelle et collective",
+            "Renforcement de la confiance en soi et de l'assertivité",
+            "Meilleure gestion du stress et de la charge mentale",
+            "Création d'un environnement de travail positif et motivant"
         ]
     }
 ];

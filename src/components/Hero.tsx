@@ -40,9 +40,7 @@ export default function Hero() {
                     Efficience EP2C vous aide à passer à l'étape supérieure.
                 </p>
 
-                <button className="btn-solutions">
-                    Accédez à nos solutions ✨
-                </button>
+
 
             </div>
 

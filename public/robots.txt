@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+# Disallow admin and dashboard pages
+Disallow: /admin
+Disallow: /panel
+Disallow: /dashboard
+
+# Sitemap
+Sitemap: https://www.efficience-ep2c.com/sitemap.xml
