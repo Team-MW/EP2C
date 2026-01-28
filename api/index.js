@@ -19,6 +19,9 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
+// Configure Clerk (Auto-loads from CLERK_SECRET_KEY in .env)
+import clerk from '@clerk/clerk-sdk-node';
+
 // Multer (Memory Storage for Serverless)
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -33,6 +36,13 @@ app.get('/api/users', async (req, res) => {
         const users = await prisma.user.findMany({
             include: { documents: true }
         });
+        if (users.length > 0) {
+            users.forEach(u => {
+                if (u.documents.length > 0) {
+                    console.log(`User ${u.email} has doc URL:`, u.documents[0].url);
+                }
+            });
+        }
         res.json(users);
     } catch (error) {
         console.error(error);
@@ -82,12 +92,45 @@ app.post('/api/users', async (req, res) => {
 app.post('/api/users/manual', async (req, res) => {
     const { email, firstName, lastName, company } = req.body;
     try {
-        // Generate a temporary placeholder ID
-        const tempId = `pre_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        let clerkUser;
+        let clerkId;
 
-        const user = await prisma.user.create({
-            data: {
-                clerkId: tempId,
+        try {
+            // 1. Create User in Clerk
+            // Note: This requires CLERK_SECRET_KEY in .env
+            clerkUser = await clerk.users.createUser({
+                emailAddress: [email],
+                firstName,
+                lastName,
+                skipPasswordRequirement: true, // User works via email code or will set password later? 
+                // Actually Clerk usually handles "invitations", but direct create works too.
+                // If skipPasswordRequirement is true, they might need to use Magic Link or Reset Password flow.
+            });
+            clerkId = clerkUser.id;
+        } catch (clerkErr) {
+            // Check if user already exists in Clerk
+            if (clerkErr.errors && clerkErr.errors[0]?.code === 'form_identifier_exists') {
+                console.log("User already in Clerk, finding...");
+                const userList = await clerk.users.getUserList({ emailAddress: [email] });
+                if (userList.length > 0) {
+                    clerkId = userList[0].id;
+                } else {
+                    throw clerkErr;
+                }
+            } else {
+                console.error("Clerk Create Error:", clerkErr);
+                throw clerkErr;
+            }
+        }
+
+        // 2. Create/Sync in Database
+        const user = await prisma.user.upsert({
+            where: { email },
+            update: {
+                clerkId, firstName, lastName, company, status: 'En attente'
+            },
+            create: {
+                clerkId,
                 email,
                 firstName,
                 lastName,
@@ -96,13 +139,11 @@ app.post('/api/users/manual', async (req, res) => {
                 status: 'En attente'
             }
         });
+
         res.json(user);
     } catch (error) {
         console.error("Manual create error:", error);
-        if (error.code === 'P2002') {
-            return res.status(409).json({ error: "Cet email existe déjà." });
-        }
-        res.status(500).json({ error: 'Erreur création manuelle' });
+        res.status(500).json({ error: error.message || 'Erreur création manuelle' });
     }
 });
 
@@ -117,6 +158,7 @@ app.get('/api/users/:clerkId/documents', async (req, res) => {
 
         if (!user) return res.status(404).json({ error: 'User not found' });
 
+        console.log("Docs for user", clerkId, ":", user.documents);
         res.json(user.documents);
     } catch (error) {
         res.status(500).json({ error: 'Erreur recuperation documents' });
@@ -138,8 +180,10 @@ app.post('/api/documents', upload.single('file'), async (req, res) => {
             return new Promise((resolve, reject) => {
                 let cld_upload_stream = cloudinary.uploader.upload_stream(
                     {
-                        folder: "ep2c_documents", // Optional: Organize in folder
-                        resource_type: "auto"     // Detect PDF, JPG, etc.
+                        folder: "ep2c_documents",
+                        resource_type: "auto",
+                        access_mode: "public", // Force public access
+                        type: "upload"         // Standard public upload
                     },
                     (error, result) => {
                         if (result) {
