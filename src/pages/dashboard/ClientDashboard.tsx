@@ -2,6 +2,7 @@ import DashboardLayout from '../../layouts/DashboardLayout';
 import { useUser } from '@clerk/clerk-react';
 import { FileCheck, Clock, AlertCircle, FileText, Upload } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
+import emailjs from '@emailjs/browser';
 
 // Define types for our DB data
 interface DbDocument {
@@ -100,6 +101,30 @@ export default function ClientDashboard() {
                 setUploadProgress(100);
                 const newDoc = await res.json();
                 setDocuments([newDoc, ...documents]);
+
+                // Send email notification from frontend
+                try {
+                    await emailjs.send(
+                        'service_rl9r1md',
+                        'template_lqm9nad',
+                        {
+                            user_name: dbUser ? `${dbUser.firstName} ${dbUser.lastName}` : 'Client',
+                            user_email: dbUser ? dbUser.email : 'email@inconnu.com',
+                            time: new Date().toLocaleString('fr-FR', {
+                                dateStyle: 'short',
+                                timeStyle: 'short'
+                            }),
+                            doc_name: file.name,
+                            doc_link: newDoc.url,
+                            message: `Nouveau document déposé par ${dbUser?.company || 'un client'} - Société: ${dbUser?.company || 'Non renseignée'}`
+                        },
+                        '2ak1IYD1zxlcPWDx_' // Public Key
+                    );
+                    console.log('✅ Email notification sent!');
+                } catch (emailError) {
+                    console.error('❌ Email notification failed:', emailError);
+                    // Don't block the success flow if email fails
+                }
 
                 // Show success notification
                 setTimeout(() => {
