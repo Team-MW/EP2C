@@ -223,7 +223,7 @@ app.post('/api/documents', upload.single('file'), async (req, res) => {
 
                 await emailjs.send(
                     process.env.EMAILJS_SERVICE_ID,
-                    "template_upload_notification", // REPLACE THIS WITH YOUR TEMPLATE ID
+                    "template_lqm9nad",
                     {
                         user_name: user ? `${user.firstName} ${user.lastName}` : 'Client',
                         user_email: user ? user.email : 'email@inconnu.com',
