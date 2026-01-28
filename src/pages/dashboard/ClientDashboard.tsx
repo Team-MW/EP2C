@@ -23,7 +23,9 @@ export default function ClientDashboard() {
     // 1. Sync User with DB on Load AND Fetch Documents
     useEffect(() => {
         // Initialize EmailJS
+        console.log('🔧 Initializing EmailJS with public key: 2ak1IYD1zxlcPWDx_');
         emailjs.init('2ak1IYD1zxlcPWDx_');
+        console.log('✅ EmailJS initialized successfully');
 
         if (!user) return;
 
@@ -105,26 +107,47 @@ export default function ClientDashboard() {
                 const newDoc = await res.json();
                 setDocuments([newDoc, ...documents]);
 
+                console.log('📄 Document uploaded successfully:', newDoc);
+                console.log('👤 Current user data:', dbUser);
+
                 // Send email notification from frontend
+                console.log('📧 Starting email notification...');
+                console.log('Service ID:', 'service_rl9r1md');
+                console.log('Template ID:', 'template_lqm9nad');
+                console.log('EmailJS initialized:', typeof emailjs !== 'undefined');
+
                 try {
+                    const emailParams = {
+                        user_name: dbUser ? `${dbUser.firstName} ${dbUser.lastName}` : 'Client',
+                        user_email: dbUser ? dbUser.email : 'email@inconnu.com',
+                        time: new Date().toLocaleString('fr-FR', {
+                            dateStyle: 'short',
+                            timeStyle: 'short'
+                        }),
+                        doc_name: file.name,
+                        doc_link: newDoc.url,
+                        message: `Nouveau document déposé par ${dbUser?.company || 'un client'} - Société: ${dbUser?.company || 'Non renseignée'}`
+                    };
+
+                    console.log('📨 Email parameters:', emailParams);
+                    console.log('🚀 Calling emailjs.send...');
+
                     const result = await emailjs.send(
                         'service_rl9r1md',
                         'template_lqm9nad',
-                        {
-                            user_name: dbUser ? `${dbUser.firstName} ${dbUser.lastName}` : 'Client',
-                            user_email: dbUser ? dbUser.email : 'email@inconnu.com',
-                            time: new Date().toLocaleString('fr-FR', {
-                                dateStyle: 'short',
-                                timeStyle: 'short'
-                            }),
-                            doc_name: file.name,
-                            doc_link: newDoc.url,
-                            message: `Nouveau document déposé par ${dbUser?.company || 'un client'} - Société: ${dbUser?.company || 'Non renseignée'}`
-                        }
+                        emailParams
                     );
-                    console.log('✅ Email notification sent successfully!', result);
-                } catch (emailError) {
-                    console.error('❌ Email notification failed:', emailError);
+
+                    console.log('✅ Email notification sent successfully!');
+                    console.log('📬 EmailJS Response:', result);
+                } catch (emailError: any) {
+                    console.error('❌ Email notification FAILED!');
+                    console.error('Error type:', typeof emailError);
+                    console.error('Error object:', emailError);
+                    console.error('Error message:', emailError?.message);
+                    console.error('Error text:', emailError?.text);
+                    console.error('Error status:', emailError?.status);
+                    console.error('Full error:', JSON.stringify(emailError, null, 2));
                     // Don't block the success flow if email fails
                 }
 

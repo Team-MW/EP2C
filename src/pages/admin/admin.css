@@ -279,3 +279,65 @@
     background-color: #fef9c3;
     color: #854d0e;
 }
+
+/* Animation pour le bouton Nouveau Client */
+@keyframes pulse-glow {
+
+    0%,
+    100% {
+        box-shadow: 0 4px 6px -1px rgba(16, 68, 169, 0.3), 0 2px 4px -1px rgba(16, 68, 169, 0.2);
+        transform: scale(1);
+    }
+
+    50% {
+        box-shadow: 0 10px 20px -5px rgba(16, 68, 169, 0.5), 0 4px 8px -2px rgba(16, 68, 169, 0.3);
+        transform: scale(1.02);
+    }
+}
+
+.animate-pulse-slow {
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Animations pour les popups */
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes zoom-in {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.animate-in {
+    animation-fill-mode: both;
+}
+
+.fade-in {
+    animation-name: fade-in;
+}
+
+.zoom-in {
+    animation-name: zoom-in;
+}
+
+.duration-200 {
+    animation-duration: 200ms;
+}
+
+.duration-300 {
+    animation-duration: 300ms;
+}

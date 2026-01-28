@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useUser, useClerk } from '@clerk/clerk-react';
-import { Users, FileText, Settings, Search, Bell, LogOut, ChevronRight, ExternalLink, UserPlus, X } from 'lucide-react';
+import { Users, FileText, Search, Bell, LogOut, ChevronRight, ExternalLink, UserPlus, X, CheckCircle, Loader } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './admin.css';
 
@@ -41,6 +41,8 @@ export default function AdminDashboard() {
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [showCreateForm, setShowCreateForm] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [showSuccess, setShowSuccess] = useState(false);
 
     useEffect(() => {
         fetchUsers();
@@ -67,6 +69,8 @@ export default function AdminDashboard() {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
 
+        setIsLoading(true);
+
         try {
             const res = await fetch('/api/users/manual', {
                 method: 'POST',
@@ -82,13 +86,21 @@ export default function AdminDashboard() {
             if (res.ok) {
                 const newUser = await res.json();
                 setUsers([...users, newUser]);
+                setIsLoading(false);
                 setShowCreateForm(false);
-                alert("Client créé avec succès ! Le client pourra se connecter avec cet email.");
+                setShowSuccess(true);
+
+                // Masquer la popup de succès après 3 secondes
+                setTimeout(() => {
+                    setShowSuccess(false);
+                }, 3000);
             } else {
                 const err = await res.json();
+                setIsLoading(false);
                 alert("Erreur: " + err.error);
             }
         } catch (error) {
+            setIsLoading(false);
             alert("Erreur réseau");
         }
     };
@@ -115,14 +127,6 @@ export default function AdminDashboard() {
                         <Users size={18} />
                         Gestion Clients
                     </button>
-                    <a href="#" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
-                        <FileText size={18} />
-                        Documents
-                    </a>
-                    <a href="#" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors">
-                        <Settings size={18} />
-                        Configuration
-                    </a>
                 </nav>
 
                 <div className="p-4 border-t border-gray-100">
@@ -141,16 +145,6 @@ export default function AdminDashboard() {
                         {selectedUser ? `Dossier : ${selectedUser.firstName} ${selectedUser.lastName}` : 'Vue d\'ensemble'}
                     </div>
                     <div className="flex items-center gap-4">
-                        <div className="relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                            <input
-                                type="text"
-                                placeholder="Rechercher un client..."
-                                className="pl-9 pr-4 py-2 bg-gray-50 border-none rounded-full text-sm w-64 focus:ring-2 focus:ring-blue-100 focus:bg-white transition-all outline-none"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                        </div>
                         <button className="relative p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors">
                             <Bell size={20} />
                             <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border border-white"></span>
@@ -263,22 +257,43 @@ export default function AdminDashboard() {
                     ) : (
                         // USER LIST VIEW
                         <>
-                            <div className="mb-8 flex items-end justify-between">
-                                <div>
-                                    <h1 className="text-2xl font-bold text-gray-900">Clients</h1>
-                                    <p className="text-gray-500 mt-1">Gérez vos clients et accédez à leurs dossiers.</p>
-                                </div>
-                                <div className="flex items-center gap-4">
-                                    <div className="text-sm text-gray-500">
-                                        Total: <strong className="text-gray-900">{users.length}</strong> clients
+                            <div className="mb-8">
+                                <div className="flex items-start justify-between mb-6">
+                                    <div>
+                                        <h1 className="text-2xl font-bold text-gray-900">Clients</h1>
+                                        <p className="text-gray-500 mt-1">Gérez vos clients et accédez à leurs dossiers.</p>
                                     </div>
                                     <button
                                         onClick={() => setShowCreateForm(true)}
-                                        className="flex items-center gap-2 bg-[#1044A9] text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                                        className="flex items-center gap-2 px-4 py-2 rounded-lg hover:shadow-lg transition-all duration-200 text-sm font-semibold shadow-md"
+                                        style={{
+                                            backgroundColor: '#1044A9',
+                                            color: '#FFFFFF',
+                                            border: 'none'
+                                        }}
+                                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#0d3685'}
+                                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#1044A9'}
                                     >
                                         <UserPlus size={18} />
                                         Nouveau Client
                                     </button>
+                                </div>
+
+                                {/* Barre de recherche visible */}
+                                <div className="flex items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                                    <div className="flex-1 relative">
+                                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                                        <input
+                                            type="text"
+                                            placeholder="Rechercher un client par nom, prénom ou email..."
+                                            className="w-full pl-12 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white transition-all outline-none"
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="text-sm text-gray-500 whitespace-nowrap">
+                                        {filteredUsers.length} / <strong className="text-gray-900">{users.length}</strong> clients
+                                    </div>
                                 </div>
                             </div>
 
@@ -314,7 +329,7 @@ export default function AdminDashboard() {
                                             </div>
                                             <div className="pt-4 flex gap-3">
                                                 <button type="button" onClick={() => setShowCreateForm(false)} className="flex-1 px-4 py-2 border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 font-medium">Annuler</button>
-                                                <button type="submit" className="flex-1 px-4 py-2 bg-[#1044A9] text-white rounded-lg hover:bg-blue-700 font-medium">Créer</button>
+                                                <button type="submit" className="flex-1 px-4 py-2 rounded-lg font-semibold text-sm shadow-md hover:shadow-lg transition-all" style={{ backgroundColor: '#1044A9', color: '#FFFFFF', border: 'none' }}>Créer</button>
                                             </div>
                                         </form>
                                     </div>
@@ -385,6 +400,34 @@ export default function AdminDashboard() {
                     )}
                 </div>
             </main>
+
+            {/* LOADING POPUP */}
+            {isLoading && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-2xl shadow-xl p-8 max-w-sm w-full text-center">
+                        <div className="flex justify-center mb-4">
+                            <Loader className="animate-spin text-blue-600" size={48} />
+                        </div>
+                        <h3 className="text-lg font-bold text-gray-900 mb-2">Création en cours...</h3>
+                        <p className="text-gray-500 text-sm">Veuillez patienter</p>
+                    </div>
+                </div>
+            )}
+
+            {/* SUCCESS POPUP */}
+            {showSuccess && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-2xl shadow-xl p-8 max-w-sm w-full text-center animate-in zoom-in duration-300">
+                        <div className="flex justify-center mb-4">
+                            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                                <CheckCircle className="text-green-600" size={40} />
+                            </div>
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-2">Client créé avec succès !</h3>
+                        <p className="text-gray-600 text-sm">Le client pourra se connecter avec son email.</p>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
