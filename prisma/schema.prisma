@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
   relationMode = "prisma"
 }
 
@@ -34,4 +34,686 @@ model Document {
   
   userId    Int
   user      User     @relation(fields: [userId], references: [id])
+  
+  @@index([userId])
+}
+
+model link_link {
+  id            String    @id @db.VarChar(30)
+  name          String    @db.VarChar(256)
+  content       String    @db.VarChar(256)
+  project_id    String    @db.VarChar(30)
+  created_at    DateTime  @default(now()) @db.Timestamp(0)
+  updated_at    DateTime? @db.Timestamp(0)
+  statistics_id String    @unique(map: "750link_link_statistics_id_unique") @db.VarChar(30)
+  icon          String    @default("globe") @db.VarChar(256)
+  rank          Int       @default(0) @db.UnsignedSmallInt
+  isActive      Boolean   @default(true)
+  type          String?   @default("link") @db.VarChar(10)
+  profile_id    String?   @db.VarChar(30)
+
+  @@map("750link_link")
+}
+
+model link_project {
+  id         String    @id @db.VarChar(30)
+  name       String    @db.VarChar(256)
+  content    String    @db.VarChar(50)
+  user_id    String    @db.VarChar(30)
+  created_at DateTime  @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+
+  @@map("750link_project")
+}
+
+model link_project_config {
+  id            String    @id @db.VarChar(30)
+  project_id    String    @unique(map: "750link_project_config_project_id_unique") @db.VarChar(30)
+  color         String?   @db.VarChar(20)
+  font_family   String?   @db.VarChar(20)
+  created_at    DateTime  @default(now()) @db.Timestamp(0)
+  updated_at    DateTime? @db.Timestamp(0)
+  border_radius String?   @db.VarChar(10)
+  image_url     String?   @db.VarChar(256)
+  image_opacity Int?      @default(0) @db.TinyInt
+  config        Json
+
+  @@map("750link_project_config")
+}
+
+model link_project_profile {
+  id              String    @id @db.VarChar(30)
+  firstname       String    @db.VarChar(256)
+  content         String?   @db.VarChar(256)
+  image_public_id String?   @db.VarChar(256)
+  image_url       String?   @db.VarChar(256)
+  project_id      String    @db.VarChar(30)
+  created_at      DateTime  @default(now()) @db.Timestamp(0)
+  updated_at      DateTime? @db.Timestamp(0)
+  email           String?   @db.VarChar(256)
+  phone           String?   @db.VarChar(256)
+  address         String?   @db.VarChar(512)
+  type            String?   @default("link") @db.VarChar(10)
+  url             String    @unique(map: "url_idx") @default("") @db.VarChar(256)
+  company         String?   @db.VarChar(256)
+  job             String?   @db.VarChar(256)
+
+  @@map("750link_project_profile")
+}
+
+model link_statistics {
+  id         String    @id @db.VarChar(30)
+  link_id    String    @unique(map: "750link_statistics_link_id_unique") @db.VarChar(30)
+  count      Int       @db.UnsignedInt
+  created_at DateTime  @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+
+  @@map("750link_statistics")
+}
+
+model link_user {
+  id         String    @id @db.VarChar(30)
+  firstname  String    @db.VarChar(256)
+  email      String    @unique(map: "750link_user_email_unique") @db.VarChar(256)
+  clerk_id   String    @unique(map: "clerk_id_idx") @db.VarChar(40)
+  deleted    Boolean?  @default(false)
+  created_at DateTime  @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+
+  @@map("750link_user")
+}
+
+model qr_qr_code {
+  id         String    @id @db.VarChar(30)
+  name       String    @db.VarChar(256)
+  user_id    String    @db.VarChar(30)
+  active     Boolean
+  created_at DateTime  @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+  content    String    @db.VarChar(256)
+  config     Json?
+
+  @@map("750qr_qr_code")
+}
+
+model qr_user {
+  id         String    @id @db.VarChar(30)
+  firstname  String    @db.VarChar(256)
+  email      String    @unique(map: "750qr_user_email_unique") @db.VarChar(256)
+  clerk_id   String    @unique(map: "clerk_id_idx") @db.VarChar(40)
+  deleted    Boolean?  @default(false)
+  created_at DateTime  @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+
+  @@map("750qr_user")
+}
+
+model admin_admin {
+  id         String    @id @db.VarChar(21)
+  clerk_id   String?   @db.VarChar(40)
+  role       String    @db.VarChar(10)
+  created_at DateTime  @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+  firstname  String?   @db.VarChar(52)
+  email      String?   @db.VarChar(256)
+}
+
+model admin_restaurant {
+  id                 String    @id @db.VarChar(21)
+  name               String?   @db.VarChar(50)
+  description        String?   @db.VarChar(256)
+  address            String?   @db.VarChar(256)
+  postal_code        String?   @db.VarChar(10)
+  city               String?   @db.VarChar(100)
+  country            String?   @db.VarChar(2)
+  phone              String?   @db.VarChar(20)
+  email              String?   @db.VarChar(256)
+  logo_public_id     String?   @db.VarChar(256)
+  logo_url           String?   @db.VarChar(256)
+  logo_blur_hash     String?   @db.VarChar(30)
+  active             Boolean?
+  subscription_id    String?   @db.VarChar(21)
+  stripe_customer_id String?   @db.VarChar(21)
+  deleted            Boolean   @default(false)
+  category           String?   @db.VarChar(21)
+  more_info          String?   @db.VarChar(21)
+  invite_id          String?   @db.VarChar(21)
+  created_at         DateTime? @default(now()) @db.Timestamp(0)
+}
+
+model admin_restaurant_invite {
+  id            String   @id @db.VarChar(21)
+  restaurant_id String   @db.VarChar(21)
+  token         String   @db.VarChar(21)
+  user_email    String   @db.VarChar(256)
+  created_at    DateTime @default(now()) @db.Timestamp(0)
+  role          String   @db.VarChar(10)
+}
+
+model admin_users {
+  id         Int       @id @default(autoincrement())
+  username   String    @unique(map: "username") @db.VarChar(50)
+  pin_code   String    @db.VarChar(6)
+  role       String?   @default("butcher") @db.VarChar(20)
+  is_active  Boolean?  @default(true)
+  created_at DateTime? @default(now()) @db.DateTime(0)
+
+  @@index([username], map: "idx_username")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model clients {
+  id            BigInt    @id @default(autoincrement())
+  ticket_number String    @unique(map: "ticket_number") @db.VarChar(10)
+  phone         String    @db.VarChar(20)
+  status        String    @default("waiting") @db.VarChar(20)
+  created_at    DateTime? @default(now()) @db.DateTime(0)
+  called_at     DateTime? @db.DateTime(0)
+
+  @@index([called_at(sort: Desc)], map: "idx_called_at")
+  @@index([created_at(sort: Desc)], map: "idx_created_at")
+  @@index([phone], map: "idx_phone")
+  @@index([status], map: "idx_status")
+}
+
+model d_allergen {
+  id         String    @id @db.VarChar(21)
+  updated_at DateTime? @db.Timestamp(0)
+}
+
+model d_archive_restaurant {
+  id                 String    @id @db.VarChar(21)
+  name               String    @db.VarChar(50)
+  description        String?   @db.VarChar(256)
+  address            String    @db.VarChar(256)
+  postal_code        String    @db.VarChar(10)
+  city               String    @db.VarChar(256)
+  country            String    @db.VarChar(3)
+  phone              String    @db.VarChar(20)
+  email              String    @db.VarChar(50)
+  logo_url           String    @db.VarChar(256)
+  logo_public_id     String    @db.VarChar(256)
+  logo_blur_hash     String    @db.VarChar(30)
+  logo_url_old       String?   @db.VarChar(256)
+  logo_public_id_old String?   @db.VarChar(256)
+  logo_blur_hash_old String?   @db.VarChar(30)
+  subscription_id    String?   @db.VarChar(21)
+  valid              Boolean   @default(false)
+  available          Boolean
+  category           String?   @db.VarChar(21)
+  more_information   String?   @db.VarChar(21)
+  created_at         DateTime  @default(now()) @db.Timestamp(0)
+  updated_at         DateTime? @db.Timestamp(0)
+}
+
+model d_archive_user {
+  id                 String    @id @db.VarChar(21)
+  firstname          String    @db.VarChar(256)
+  lastname           String    @db.VarChar(256)
+  phone              String    @db.VarChar(20)
+  email              String    @unique(map: "d_archive_user_email_unique") @db.VarChar(50)
+  clerk_id           String    @db.VarChar(40)
+  stripe_customer_id String?   @db.VarChar(30)
+  created_at         DateTime  @default(now()) @db.Timestamp(0)
+  updated_at         DateTime? @db.Timestamp(0)
+}
+
+model d_article {
+  id                  String    @id @db.VarChar(21)
+  name                String    @db.VarChar(256)
+  description         String    @db.VarChar(256)
+  price               Int       @db.UnsignedSmallInt
+  image_public_id     String?   @db.VarChar(256)
+  image_url           String?   @db.VarChar(256)
+  image_blur_hash     String?   @db.VarChar(30)
+  image_public_id_old String?   @db.VarChar(256)
+  image_url_old       String?   @db.VarChar(256)
+  image_blur_hash_old String?   @db.VarChar(30)
+  active              Boolean
+  available           Boolean
+  product_type_id     String?   @db.VarChar(24)
+  restaurant_id       String    @db.VarChar(21)
+  deleted             Boolean
+  validated           Boolean
+  created_at          DateTime  @default(now()) @db.Timestamp(0)
+  updated_at          DateTime? @db.Timestamp(0)
+  tva                 Int       @default(10) @db.UnsignedSmallInt
+
+  @@index([restaurant_id], map: "restaurant_idIdx")
+}
+
+model d_articleCustom_customization {
+  article_id       String    @db.VarChar(21)
+  customization_id String    @db.VarChar(21)
+  updated_at       DateTime? @db.Timestamp(0)
+  rank             Int       @default(0) @db.UnsignedSmallInt
+
+  @@id([article_id, customization_id])
+}
+
+model d_article_allergen {
+  article_id  String    @db.VarChar(21)
+  allergen_id String    @db.VarChar(21)
+  updated_at  DateTime? @db.Timestamp(0)
+
+  @@id([article_id, allergen_id])
+}
+
+model d_article_category {
+  article_id  String    @db.VarChar(21)
+  category_id String    @db.VarChar(21)
+  rank        Int       @default(0) @db.UnsignedSmallInt
+  updated_at  DateTime? @db.Timestamp(0)
+
+  @@id([article_id, category_id])
+}
+
+model d_article_customization {
+  article_id       String    @db.VarChar(21)
+  customization_id String    @db.VarChar(21)
+  price            Int       @db.UnsignedSmallInt
+  updated_at       DateTime? @db.Timestamp(0)
+
+  @@id([article_id, customization_id])
+}
+
+model d_article_type {
+  id         String    @id @db.VarChar(21)
+  type_group String    @db.VarChar(21)
+  name       String    @default("") @db.VarChar(256)
+  updated_at DateTime? @db.Timestamp(0)
+}
+
+model d_article_type_group {
+  id         String    @id @db.VarChar(21)
+  name       String    @default("") @db.VarChar(256)
+  updated_at DateTime? @db.Timestamp(0)
+}
+
+model d_category {
+  id            String    @id @db.VarChar(21)
+  name          String    @db.VarChar(256)
+  description   String?   @db.VarChar(256)
+  created_at    DateTime  @default(now()) @db.Timestamp(0)
+  updated_at    DateTime? @db.Timestamp(0)
+  deleted       Boolean   @default(false)
+  restaurant_id String    @db.VarChar(21)
+
+  @@index([restaurant_id], map: "restaurant_idIdx")
+}
+
+model d_customization {
+  id            String    @id @db.VarChar(21)
+  name          String    @db.VarChar(256)
+  description   String?   @db.VarChar(256)
+  restaurant_id String    @db.VarChar(21)
+  deleted       Boolean   @default(false)
+  created_at    DateTime  @default(now()) @db.Timestamp(0)
+  updated_at    DateTime? @db.Timestamp(0)
+}
+
+model d_log {
+  id            String   @id @db.VarChar(21)
+  user_id       String?  @db.VarChar(21)
+  restaurant_id String?  @db.VarChar(21)
+  action        String?  @db.VarChar(50)
+  created_at    DateTime @default(now()) @db.Timestamp(0)
+  metadata      Json?
+  method        String?  @db.VarChar(5)
+  host          String   @db.VarChar(50)
+  path          String?  @db.VarChar(256)
+  source        String   @db.VarChar(50)
+}
+
+model d_menu {
+  id            String    @id @db.VarChar(21)
+  name          String    @db.VarChar(50)
+  description   String?   @db.VarChar(256)
+  restaurant_id String    @db.VarChar(21)
+  available     Boolean   @default(false)
+  deleted       Boolean   @default(false)
+  created_at    DateTime  @default(now()) @db.Timestamp(0)
+  updated_at    DateTime? @db.Timestamp(0)
+  terminal      Boolean   @default(false)
+
+  @@index([restaurant_id], map: "restaurant_idIdx")
+}
+
+model d_menu_available {
+  id         String    @id @db.VarChar(21)
+  menu_id    String    @db.VarChar(21)
+  rrule      String    @db.VarChar(256)
+  all_day    Boolean   @default(false)
+  created_at DateTime  @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+
+  @@index([menu_id], map: "menu_idIdx")
+}
+
+model d_menu_category {
+  menu_id     String    @db.VarChar(21)
+  category_id String    @db.VarChar(21)
+  rank        Int       @default(0) @db.SmallInt
+  updated_at  DateTime? @db.Timestamp(0)
+
+  @@id([menu_id, category_id])
+}
+
+model d_menu_global_setting {
+  id             String    @id @db.VarChar(21)
+  restaurant_id  String    @db.VarChar(21)
+  delivery_price Int       @default(0) @db.SmallInt
+  created_at     DateTime  @default(now()) @db.Timestamp(0)
+  updated_at     DateTime? @db.Timestamp(0)
+}
+
+model d_menu_option {
+  id            String    @id @db.VarChar(21)
+  menu_id       String    @db.VarChar(21)
+  created_at    DateTime  @default(now()) @db.Timestamp(0)
+  updated_at    DateTime? @db.Timestamp(0)
+  type          String?   @db.VarChar(25)
+  rank          Int       @default(0) @db.UnsignedTinyInt
+  restaurant_id String    @db.VarChar(21)
+}
+
+model d_order {
+  id                       String           @id @db.VarChar(21)
+  order_id                 String           @db.VarChar(21)
+  ustensil                 Boolean?         @default(false)
+  more_information         String?          @db.VarChar(256)
+  status                   d_order_status?
+  stripe_payment_intent_id String?          @db.VarChar(256)
+  takeout                  d_order_takeout? @default(in_place)
+  delivery_price           Int?             @default(0)
+  restaurant_id            String           @db.VarChar(21)
+  user_id                  String?          @db.VarChar(21)
+  canceled                 Boolean?         @default(false)
+  article                  Json
+  total_price              Int
+  accepted                 Boolean?         @default(false)
+  delivery_address_id      String?          @db.VarChar(21)
+  created_at               DateTime         @default(now()) @db.Timestamp(0)
+  updated_at               DateTime?        @db.Timestamp(0)
+  refunded                 Boolean?         @default(false)
+  project                  String?          @default("click-and-collect") @db.VarChar(20)
+
+  @@index([restaurant_id], map: "restaurant_idIdx")
+  @@index([user_id], map: "user_idIdx")
+}
+
+model d_qr_code {
+  id            String    @id @db.VarChar(21)
+  name          String    @db.VarChar(256)
+  content       String    @db.VarChar(256)
+  restaurant_id String    @db.VarChar(21)
+  active        Boolean   @default(true)
+  created_at    DateTime  @default(now()) @db.Timestamp(0)
+  updated_at    DateTime? @db.Timestamp(0)
+}
+
+model d_qr_code_statistics {
+  id         String    @id @db.VarChar(21)
+  qr_code_id String    @db.VarChar(21)
+  type       String    @db.VarChar(12)
+  value      String    @db.VarChar(50)
+  count      Int
+  created_at DateTime  @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+}
+
+model d_restaurant {
+  id                 String    @id @db.VarChar(21)
+  name               String    @db.VarChar(50)
+  description        String?   @db.VarChar(256)
+  address            String?   @db.VarChar(256)
+  postal_code        String?   @db.VarChar(10)
+  city               String?   @db.VarChar(256)
+  country            String?   @db.VarChar(3)
+  phone              String    @db.VarChar(20)
+  email              String    @db.VarChar(256)
+  logo_url           String    @db.VarChar(256)
+  logo_public_id     String    @db.VarChar(256)
+  logo_blur_hash     String    @db.VarChar(30)
+  logo_url_old       String?   @db.VarChar(256)
+  logo_public_id_old String?   @db.VarChar(256)
+  logo_blur_hash_old String?   @db.VarChar(30)
+  subscription_id    String?   @db.VarChar(21)
+  delete             Boolean   @default(false)
+  valid              Boolean   @default(false)
+  available          Boolean
+  category           String?   @db.VarChar(21)
+  more_information   String?   @db.VarChar(21)
+  created_at         DateTime  @default(now()) @db.Timestamp(0)
+  updated_at         DateTime? @db.Timestamp(0)
+}
+
+model d_restaurant_address {
+  id            String  @id @db.VarChar(21)
+  restaurant_id String  @db.VarChar(21)
+  address       String  @db.VarChar(255)
+  postal_code   String  @db.VarChar(10)
+  city          String  @db.VarChar(255)
+  state         String  @db.VarChar(255)
+  country       String  @db.VarChar(100)
+  latitude      Decimal @db.Decimal(11, 8)
+  longitude     Decimal @db.Decimal(11, 8)
+  range         Int?    @db.UnsignedInt
+}
+
+model d_restaurant_availability {
+  id            String    @id @db.VarChar(21)
+  restaurant_id String    @db.VarChar(21)
+  instances     Int       @db.UnsignedInt
+  is_active     Boolean   @default(true)
+  created_at    DateTime  @default(now()) @db.Timestamp(0)
+  updated_at    DateTime? @db.Timestamp(0)
+
+  @@index([restaurant_id], map: "restaurant_idIdx")
+}
+
+model d_restaurant_category {
+  id         String    @id @db.VarChar(21)
+  name       String    @default("") @db.VarChar(50)
+  created_at DateTime  @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+}
+
+model d_restaurant_document {
+  id            String                      @id @db.VarChar(21)
+  public_id     String                      @db.VarChar(256)
+  url           String                      @db.VarChar(256)
+  type          String                      @db.VarChar(10)
+  valid         d_restaurant_document_valid
+  restaurant_id String                      @db.VarChar(21)
+  created_at    DateTime                    @default(now()) @db.Timestamp(0)
+  updated_at    DateTime?                   @db.Timestamp(0)
+}
+
+model d_restaurant_more_info {
+  id                  String    @id @db.VarChar(21)
+  restaurant_id       String    @db.VarChar(21)
+  google_reviews      String?   @db.VarChar(256)
+  facebook            String?   @db.VarChar(256)
+  instagram           String?   @db.VarChar(256)
+  snapchat            String?   @db.VarChar(256)
+  tiktok              String?   @db.VarChar(256)
+  whatsapp            String?   @db.VarChar(12)
+  wifi_name           String?   @db.VarChar(50)
+  wifi_password       String?   @db.VarChar(256)
+  image_public_id     String?   @db.VarChar(256)
+  image_url           String?   @db.VarChar(256)
+  image_blur_hash     String?   @db.VarChar(30)
+  image_public_id_old String?   @db.VarChar(256)
+  image_url_old       String?   @db.VarChar(256)
+  image_blur_hash_old String?   @db.VarChar(30)
+  validate            Boolean?  @default(false)
+  created_at          DateTime  @default(now()) @db.Timestamp(0)
+  updated_at          DateTime? @db.Timestamp(0)
+}
+
+model d_restaurant_operation_time {
+  id            String    @id @db.VarChar(21)
+  rrule_morning String    @db.VarChar(100)
+  rrule_evening String?   @db.VarChar(100)
+  all_day       Boolean   @default(false)
+  open          Boolean   @default(false)
+  restaurant_id String?   @db.VarChar(21)
+  updated_at    DateTime? @db.Timestamp(0)
+}
+
+model d_restaurant_push_token {
+  id            String    @id @db.VarChar(21)
+  push_token    Json?
+  restaurant_id String    @db.VarChar(21)
+  active        Boolean   @default(true)
+  navigator     String?   @db.VarChar(52)
+  created_at    DateTime  @default(now()) @db.Timestamp(0)
+  updated_at    DateTime? @db.Timestamp(0)
+}
+
+model d_restaurant_subscription {
+  id          String    @id @db.VarChar(21)
+  name        String    @db.VarChar(256)
+  price       Int       @db.UnsignedSmallInt
+  description String?   @db.VarChar(256)
+  updated_at  DateTime? @db.Timestamp(0)
+}
+
+model d_restaurant_terminal {
+  id            String    @id @db.VarChar(21)
+  restaurant_id String    @db.VarChar(21)
+  enabled       Boolean   @default(false)
+  created_at    DateTime  @default(now()) @db.Timestamp(0)
+  updated_at    DateTime? @db.Timestamp(0)
+}
+
+model d_restaurant_user {
+  restaurant_id String    @db.VarChar(21)
+  user_id       String    @db.VarChar(21)
+  role          String    @db.VarChar(10)
+  updated_at    DateTime? @db.Timestamp(0)
+
+  @@id([user_id, restaurant_id])
+}
+
+model d_rule {
+  id               String    @id @db.VarChar(21)
+  min_quantity     Int       @db.UnsignedSmallInt
+  max_quantity     Int       @db.UnsignedSmallInt
+  multiple         Boolean
+  customization_id String    @db.VarChar(21)
+  created_at       DateTime  @default(now()) @db.Timestamp(0)
+  updated_at       DateTime? @db.Timestamp(0)
+}
+
+model d_subscription {
+  id              String    @id @db.VarChar(21)
+  subscription_id String?   @db.VarChar(21)
+  restaurant_id   String?   @db.VarChar(21)
+  stripe_sub_id   String?   @db.VarChar(30)
+  stripe_acct_id  String?   @db.VarChar(30)
+  stripe_cus_id   String?   @db.VarChar(30)
+  subscribe       Boolean   @default(false)
+  restaurant_fees Int       @default(1000) @db.SmallInt
+  created_at      DateTime  @default(now()) @db.Timestamp(0)
+  updated_at      DateTime? @db.Timestamp(0)
+  terminal_id     String?   @db.VarChar(21)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model d_terminal_media {
+  id              String    @id @db.VarChar(21)
+  terminal_id     String    @db.VarChar(21)
+  media_public_id String    @db.VarChar(256)
+  media_url       String    @db.VarChar(256)
+  delay           Int       @default(1000) @db.SmallInt
+  rank            Int       @default(0) @db.TinyInt
+  created_at      DateTime  @default(now()) @db.Timestamp(0)
+  updated_at      DateTime? @db.Timestamp(0)
+}
+
+model d_user {
+  id                 String    @id @db.VarChar(21)
+  firstname          String?   @db.VarChar(256)
+  lastname           String?   @db.VarChar(256)
+  phone              String?   @db.VarChar(20)
+  email              String    @unique(map: "d_user_email_unique") @db.VarChar(256)
+  clerk_id           String?   @unique(map: "clerk_id_idx") @db.VarChar(40)
+  deleted            Boolean?  @default(false)
+  stripe_customer_id String?   @db.VarChar(30)
+  created_at         DateTime  @default(now()) @db.Timestamp(0)
+  updated_at         DateTime? @db.Timestamp(0)
+  user_id            String?   @db.VarChar(10)
+}
+
+model d_user_address {
+  id          String    @id @db.VarChar(21)
+  name        String?   @db.VarChar(100)
+  user_id     String    @db.VarChar(21)
+  address     String    @db.VarChar(256)
+  city        String    @db.VarChar(50)
+  postal_code String    @db.VarChar(10)
+  preferred   Boolean   @default(false)
+  created_at  DateTime  @default(now()) @db.Timestamp(0)
+  updated_at  DateTime? @db.Timestamp(0)
+  latitude    Decimal   @default(0.00000000) @db.Decimal(11, 8)
+  longitude   Decimal   @default(0.00000000) @db.Decimal(11, 8)
+}
+
+model d_user_push_token {
+  id         String    @id @db.VarChar(21)
+  push_token Json?
+  user_id    String    @db.VarChar(21)
+  active     Boolean   @default(true)
+  navigator  String?   @db.VarChar(52)
+  created_at DateTime  @default(now()) @db.Timestamp(0)
+  updated_at DateTime? @db.Timestamp(0)
+}
+
+model daily_stats {
+  id               Int       @id @default(autoincrement())
+  stat_date        DateTime  @unique(map: "stat_date") @db.Date
+  total_clients    Int?      @default(0)
+  total_called     Int?      @default(0)
+  avg_wait_minutes Int?      @default(0)
+  peak_hour        Int?
+  created_at       DateTime? @default(now()) @db.DateTime(0)
+
+  @@index([stat_date(sort: Desc)], map: "idx_stat_date")
+}
+
+model sms_logs {
+  id            BigInt    @id @default(autoincrement())
+  client_id     BigInt?
+  phone         String    @db.VarChar(20)
+  message       String    @db.Text
+  status        String?   @default("sent") @db.VarChar(20)
+  twilio_sid    String?   @db.VarChar(100)
+  sent_at       DateTime? @default(now()) @db.DateTime(0)
+  error_message String?   @db.Text
+
+  @@index([client_id], map: "idx_client_id")
+  @@index([sent_at(sort: Desc)], map: "idx_sent_at")
+}
+
+enum d_order_status {
+  O0
+  O1
+  O2
+  O3
+  O4
+  O5
+}
+
+enum d_restaurant_document_valid {
+  valid
+  invalid
+  pending
+}
+
+enum d_order_takeout {
+  in_place
+  takeaway
+  deliver
 }
