@@ -8,6 +8,7 @@ import About from './pages/About';
 import ServicesPage from './pages/ServicesPage';
 import Blog from './pages/Blog';
 import ServiceDetail from './pages/ServiceDetail';
+import AdminDashboard from './pages/admin/AdminDashboard';
 
 function App() {
   return (
@@ -24,6 +25,9 @@ function App() {
         {/* Dashboard Routes - Protected in real app */}
         <Route path="/panel" element={<ClientDashboard />} />
         <Route path="/panel/documents" element={<ClientDocuments />} />
+
+        {/* Admin Route - Clerk Protected */}
+        <Route path="/admin" element={<AdminDashboard />} />
       </Routes>
     </BrowserRouter>
   );

@@ -1,10 +1,8 @@
-import { useState } from 'react';
-import { Eye, EyeOff, ArrowLeft, Check } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { SignIn } from '@clerk/clerk-react';
 
 export default function Login() {
-    const [showPassword, setShowPassword] = useState(false);
-    const [rememberMe, setRememberMe] = useState(false);
 
     return (
         <div className="login-page">
@@ -34,63 +32,19 @@ export default function Login() {
 
             {/* Right Side - Form */}
             <div className="login-form-container">
-                <div className="login-form-wrapper">
+                <div className="login-form-wrapper" style={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
 
-                    <div className="form-header">
-                        <h2 className="form-title">Bienvenue</h2>
-                        <p className="form-subtitle">Veuillez entrer vos coordonnées pour vous connecter.</p>
-                    </div>
-
-                    <form className="login-form">
-
-                        <div className="input-group">
-                            <label className="input-label">Email</label>
-                            <input
-                                type="email"
-                                className="clean-input"
-                                placeholder="votre@email.com"
-                            />
-                        </div>
-
-                        <div className="input-group">
-                            <label className="input-label">Mot de passe</label>
-                            <div className="password-wrapper">
-                                <input
-                                    type={showPassword ? "text" : "password"}
-                                    className="clean-input"
-                                    placeholder="••••••••"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="password-toggle-btn"
-                                >
-                                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                                </button>
-                            </div>
-                        </div>
-
-                        <div className="form-actions">
-                            <div
-                                className={`remember-checkbox ${rememberMe ? 'active' : ''}`}
-                                onClick={() => setRememberMe(!rememberMe)}
-                            >
-                                <div className="checkbox-box">
-                                    {rememberMe && <Check size={12} strokeWidth={4} />}
-                                </div>
-                                <span>Se souvenir de moi</span>
-                            </div>
-                            <a href="#" className="forgot-link">Mot de passe oublié ?</a>
-                        </div>
-
-                        <button className="submit-btn">
-                            Connexion
-                        </button>
-                    </form>
-
-                    <div className="form-footer">
-                        Vous n'avez pas de compte ? <a href="#" className="register-link">Contactez-nous</a>
-                    </div>
+                    <SignIn
+                        appearance={{
+                            elements: {
+                                rootBox: "w-full",
+                                card: "shadow-none border-none",
+                                formButtonPrimary: "bg-[#1044A9] hover:bg-[#0d3685]",
+                                footerActionLink: "text-[#1044A9] hover:text-[#0d3685]"
+                            }
+                        }}
+                        signUpUrl="/contact" // Redirect sign ups to contact or disable
+                    />
 
                 </div>
             </div>
