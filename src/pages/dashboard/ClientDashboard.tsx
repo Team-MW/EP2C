@@ -22,6 +22,9 @@ export default function ClientDashboard() {
 
     // 1. Sync User with DB on Load AND Fetch Documents
     useEffect(() => {
+        // Initialize EmailJS
+        emailjs.init('2ak1IYD1zxlcPWDx_');
+
         if (!user) return;
 
         const syncUser = async () => {
@@ -104,7 +107,7 @@ export default function ClientDashboard() {
 
                 // Send email notification from frontend
                 try {
-                    await emailjs.send(
+                    const result = await emailjs.send(
                         'service_rl9r1md',
                         'template_lqm9nad',
                         {
@@ -117,10 +120,9 @@ export default function ClientDashboard() {
                             doc_name: file.name,
                             doc_link: newDoc.url,
                             message: `Nouveau document déposé par ${dbUser?.company || 'un client'} - Société: ${dbUser?.company || 'Non renseignée'}`
-                        },
-                        '2ak1IYD1zxlcPWDx_' // Public Key
+                        }
                     );
-                    console.log('✅ Email notification sent!');
+                    console.log('✅ Email notification sent successfully!', result);
                 } catch (emailError) {
                     console.error('❌ Email notification failed:', emailError);
                     // Don't block the success flow if email fails
