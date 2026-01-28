@@ -1,6 +1,6 @@
 import DashboardLayout from '../../layouts/DashboardLayout';
 import { useUser } from '@clerk/clerk-react';
-import { FileCheck, Clock, AlertCircle, FileText, Upload } from 'lucide-react';
+import { FileCheck, Clock, FileText, Upload } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import emailjs from '@emailjs/browser';
 
@@ -12,6 +12,7 @@ interface DbDocument {
     size: string;
     status: string;
     createdAt: string;
+    url: string;
 }
 
 export default function ClientDashboard() {
@@ -232,36 +233,44 @@ export default function ClientDashboard() {
 
             {/* Stats Overview */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                {/* Bloc 1: Documents déposés aujourd'hui */}
                 <div className="bg-gradient-to-br from-[#1044A9] to-[#2563eb] p-6 rounded-2xl shadow-lg text-white transform hover:scale-[1.02] transition-transform cursor-pointer">
                     <div className="flex justify-between items-start mb-4">
                         <div className="p-3 bg-white/20 rounded-xl">
-                            <Clock size={24} className="text-white" />
+                            <Upload size={24} className="text-white" />
                         </div>
-                        <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-semibold">Prioritaire</span>
+                        <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-semibold">Aujourd'hui</span>
                     </div>
-                    <div className="text-3xl font-bold mb-1">En cours</div>
-                    <div className="text-blue-100 text-sm">Votre dossier est en traitement</div>
+                    <div className="text-3xl font-bold mb-1">
+                        {documents.filter(d => {
+                            const docDate = new Date(d.createdAt);
+                            const today = new Date();
+                            return docDate.toDateString() === today.toDateString();
+                        }).length}
+                    </div>
+                    <div className="text-blue-100 text-sm">Documents déposés aujourd'hui</div>
                 </div>
 
+                {/* Bloc 2: Total des documents */}
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
                     <div className="flex justify-between items-start mb-4">
                         <div className="p-3 bg-indigo-50 rounded-xl">
-                            <FileCheck size={24} className="text-indigo-600" />
+                            <FileText size={24} className="text-indigo-600" />
                         </div>
                     </div>
-                    <div className="text-3xl font-bold text-gray-900 mb-1">{documents.filter(d => d.status === 'Validé').length}</div>
-                    <div className="text-gray-500 text-sm">Documents validés</div>
+                    <div className="text-3xl font-bold text-gray-900 mb-1">{documents.length}</div>
+                    <div className="text-gray-500 text-sm">Total de documents déposés</div>
                 </div>
 
+                {/* Bloc 3: Vide pour l'instant */}
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
                     <div className="flex justify-between items-start mb-4">
-                        <div className="p-3 bg-orange-50 rounded-xl">
-                            <AlertCircle size={24} className="text-orange-600" />
+                        <div className="p-3 bg-gray-50 rounded-xl">
+                            <Clock size={24} className="text-gray-400" />
                         </div>
-                        <span className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-semibold">Action requise</span>
                     </div>
-                    <div className="text-3xl font-bold text-gray-900 mb-1">1</div>
-                    <div className="text-gray-500 text-sm">Document manquant (KBIS)</div>
+                    <div className="text-3xl font-bold text-gray-900 mb-1">-</div>
+                    <div className="text-gray-500 text-sm">À venir</div>
                 </div>
             </div>
 
@@ -349,25 +358,31 @@ export default function ClientDashboard() {
                     ) : (
                         <div className="space-y-4 mb-6 flex-1 overflow-y-auto max-h-[300px]">
                             {documents.map((doc) => (
-                                <div key={doc.id} className="flex items-center p-3 hover:bg-gray-50 rounded-lg transition-colors border border-gray-50 hover:border-gray-200">
-                                    <div className="w-10 h-10 rounded-lg bg-blue-50 text-[#1044A9] flex items-center justify-center mr-4">
+                                <a
+                                    key={doc.id}
+                                    href={doc.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center p-3 hover:bg-blue-50 rounded-lg transition-colors border border-gray-50 hover:border-blue-200 cursor-pointer group"
+                                >
+                                    <div className="w-10 h-10 rounded-lg bg-blue-50 text-[#1044A9] flex items-center justify-center mr-4 group-hover:bg-blue-100 transition-colors">
                                         <FileText size={20} />
                                     </div>
                                     <div className="flex-1">
-                                        <h4 className="text-sm font-semibold text-gray-900">{doc.name}</h4>
-                                        <p className="text-xs text-gray-500">{doc.size} • {doc.type}</p>
+                                        <h4 className="text-sm font-semibold text-gray-900 group-hover:text-[#1044A9] transition-colors">{doc.name}</h4>
+                                        <p className="text-xs text-gray-500">{doc.size} • {doc.type} • {new Date(doc.createdAt).toLocaleDateString('fr-FR')}</p>
                                     </div>
                                     <div className="text-green-600">
                                         <FileCheck size={18} />
                                     </div>
-                                </div>
+                                </a>
                             ))}
                         </div>
                     )}
 
-                    <button className="w-full py-3 bg-gray-50 text-gray-600 font-semibold rounded-xl hover:bg-gray-100 transition-colors text-sm mt-auto">
+                    <a href="/dashboard/documents" className="block w-full py-3 bg-gray-50 text-gray-600 font-semibold rounded-xl hover:bg-gray-100 transition-colors text-sm mt-auto text-center">
                         Voir l'historique complet
-                    </button>
+                    </a>
                 </div>
             </div>
         </DashboardLayout>

@@ -223,6 +223,67 @@ app.post('/api/documents', upload.single('file'), async (req, res) => {
     }
 });
 
+// 5. DELETE USER (Admin)
+app.delete('/api/users/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        // Delete all documents associated with this user first
+        await prisma.document.deleteMany({
+            where: { userId: parseInt(id) }
+        });
+
+        // Then delete the user
+        await prisma.user.delete({
+            where: { id: parseInt(id) }
+        });
+
+        res.json({ success: true, message: 'Utilisateur supprimé avec succès' });
+    } catch (error) {
+        console.error("Delete User Error:", error);
+        res.status(500).json({ error: 'Erreur suppression utilisateur' });
+    }
+});
+
+// 6. DELETE DOCUMENT
+app.delete('/api/documents/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        // Get document info first to delete from Cloudinary
+        const doc = await prisma.document.findUnique({
+            where: { id: parseInt(id) }
+        });
+
+        if (!doc) {
+            return res.status(404).json({ error: 'Document non trouvé' });
+        }
+
+        // Extract public_id from Cloudinary URL
+        // URL format: https://res.cloudinary.com/[cloud]/[resource_type]/upload/v[version]/[public_id].[format]
+        const urlParts = doc.url.split('/');
+        const fileNameWithExt = urlParts[urlParts.length - 1];
+        const fileName = fileNameWithExt.split('.')[0];
+        const publicId = `ep2c_documents/${fileName}`;
+
+        // Delete from Cloudinary
+        try {
+            await cloudinary.uploader.destroy(publicId);
+        } catch (cloudinaryError) {
+            console.warn("Cloudinary delete warning:", cloudinaryError);
+            // Continue even if Cloudinary delete fails
+        }
+
+        // Delete from database
+        await prisma.document.delete({
+            where: { id: parseInt(id) }
+        });
+
+        res.json({ success: true, message: 'Document supprimé avec succès' });
+    } catch (error) {
+        console.error("Delete Document Error:", error);
+        res.status(500).json({ error: 'Erreur suppression document' });
+    }
+});
+
 // Default route
 app.get('/api', (req, res) => {
     res.send('API EP2C is running');

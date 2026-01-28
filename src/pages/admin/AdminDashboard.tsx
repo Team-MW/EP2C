@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useUser, useClerk } from '@clerk/clerk-react';
-import { Users, FileText, Search, Bell, LogOut, ChevronRight, ExternalLink, UserPlus, X, CheckCircle, Loader } from 'lucide-react';
+import { Users, Search, Bell, LogOut, ChevronRight, ExternalLink, UserPlus, X, CheckCircle, Loader, FileText, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './admin.css';
 
@@ -54,9 +54,12 @@ export default function AdminDashboard() {
             if (res.ok) {
                 const data = await res.json();
                 setUsers(data);
+            } else {
+                console.warn('Failed to fetch users:', res.status);
             }
         } catch (error) {
-            console.error("Failed to fetch users", error);
+            console.warn("Failed to fetch users - backend may not be running", error);
+            // Ne pas afficher d'erreur à l'utilisateur si le backend n'est pas démarré
         }
     };
 
@@ -104,6 +107,70 @@ export default function AdminDashboard() {
             alert("Erreur réseau");
         }
     };
+
+    const handleDeleteUser = async (userId: number, userName: string) => {
+        if (!confirm(`Êtes-vous sûr de vouloir supprimer le client "${userName}" ?\n\nCette action supprimera également tous ses documents et est irréversible.`)) {
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/users/${userId}`, {
+                method: 'DELETE'
+            });
+
+            if (res.ok) {
+                setUsers(users.filter(u => u.id !== userId));
+                if (selectedUser?.id === userId) {
+                    setSelectedUser(null);
+                }
+                alert("Client supprimé avec succès !");
+            } else {
+                const err = await res.json();
+                alert("Erreur: " + err.error);
+            }
+        } catch (error) {
+            alert("Erreur réseau lors de la suppression");
+        }
+    };
+
+    const handleDeleteDocument = async (docId: number, docName: string) => {
+        if (!confirm(`Êtes-vous sûr de vouloir supprimer le document "${docName}" ?\n\nCette action est irréversible.`)) {
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/documents/${docId}`, {
+                method: 'DELETE'
+            });
+
+            if (res.ok) {
+                // Update the selected user's documents
+                if (selectedUser) {
+                    setSelectedUser({
+                        ...selectedUser,
+                        documents: selectedUser.documents.filter(d => d.id !== docId)
+                    });
+                }
+                // Update the users list
+                setUsers(users.map(u => {
+                    if (u.id === selectedUser?.id) {
+                        return {
+                            ...u,
+                            documents: u.documents.filter(d => d.id !== docId)
+                        };
+                    }
+                    return u;
+                }));
+                alert("Document supprimé avec succès !");
+            } else {
+                const err = await res.json();
+                alert("Erreur: " + err.error);
+            }
+        } catch (error) {
+            alert("Erreur réseau lors de la suppression");
+        }
+    };
+
 
     const filteredUsers = users.filter(u =>
         (u.firstName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
@@ -232,14 +299,25 @@ export default function AdminDashboard() {
                                                         <td className="px-6 py-4 text-gray-500 tabular-nums">{doc.size}</td>
                                                         <td className="px-6 py-4 text-gray-500 tabular-nums">{new Date(doc.createdAt).toLocaleDateString()}</td>
                                                         <td className="px-6 py-4 text-right">
-                                                            <a
-                                                                href={doc.url}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium text-xs border border-blue-200 hover:border-blue-300 bg-blue-50 px-3 py-1.5 rounded-md transition-all"
-                                                            >
-                                                                Voir <ExternalLink size={12} />
-                                                            </a>
+                                                            <div className="flex items-center justify-end gap-2">
+                                                                <a
+                                                                    href={doc.url}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium text-xs border border-blue-200 hover:border-blue-300 bg-blue-50 px-3 py-1.5 rounded-md transition-all"
+                                                                >
+                                                                    Voir <ExternalLink size={12} />
+                                                                </a>
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        handleDeleteDocument(doc.id, doc.name);
+                                                                    }}
+                                                                    className="inline-flex items-center gap-1 text-red-600 hover:text-red-800 font-medium text-xs border border-red-200 hover:border-red-300 bg-red-50 px-3 py-1.5 rounded-md transition-all"
+                                                                >
+                                                                    <Trash2 size={12} />
+                                                                </button>
+                                                            </div>
                                                         </td>
                                                     </tr>
                                                 ))}
@@ -381,9 +459,24 @@ export default function AdminDashboard() {
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
-                                                    <button className="text-gray-400 hover:text-blue-600 p-1 rounded-md hover:bg-blue-50 transition-all">
-                                                        <ChevronRight size={20} />
-                                                    </button>
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        <button
+                                                            onClick={() => setSelectedUser(u)}
+                                                            className="text-gray-400 hover:text-blue-600 p-1 rounded-md hover:bg-blue-50 transition-all"
+                                                        >
+                                                            <ChevronRight size={20} />
+                                                        </button>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleDeleteUser(u.id, `${u.firstName} ${u.lastName}`);
+                                                            }}
+                                                            className="text-red-400 hover:text-red-600 p-1 rounded-md hover:bg-red-50 transition-all"
+                                                            title="Supprimer le client"
+                                                        >
+                                                            <Trash2 size={18} />
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         )) : (
