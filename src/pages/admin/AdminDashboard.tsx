@@ -53,7 +53,7 @@ export default function AdminDashboard() {
     const handlePinSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         // Code PIN codé en dur pour la démo - À changer pour une variable d'env en prod
-        if (pinCode === '12345') {
+        if (pinCode === '00000') {
             setIsAuthenticated(true);
             setError('');
         } else {
@@ -220,7 +220,7 @@ export default function AdminDashboard() {
 
                         <button
                             type="submit"
-                            className="w-full group relative flex items-center justify-center gap-2 py-4 bg-gray-900 text-white font-bold text-lg rounded-xl hover:bg-black transition-all duration-300 shadow-md hover:shadow-xl transform hover:-translate-y-0.5"
+                            className="w-full group relative flex items-center justify-center gap-2 py-4 bg-black text-white font-bold text-lg rounded-xl hover:bg-gray-900 transition-all duration-300 shadow-md hover:shadow-xl transform hover:-translate-y-0.5"
                         >
                             <span>Déverrouiller</span>
                             <Unlock size={20} className="opacity-70 group-hover:opacity-100 transition-opacity" />
