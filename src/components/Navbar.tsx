@@ -24,27 +24,34 @@ export default function Navbar() {
             <div className="container navbar-container flex items-center justify-between h-20 px-4">
 
                 {/* Mobile View: Actions + Burger */}
-                <div className="md:hidden flex items-center justify-between w-full gap-2">
+                <div className="md:hidden flex items-center justify-between w-full gap-3">
 
                     {/* Left side actions on mobile */}
                     <div className="flex items-center gap-2">
-                        <Link to="/login" className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-3 py-2 border border-white/20 rounded-full hover:bg-white/10 transition-colors">
-                            <User size={12} />
-                            <span>Espace Client</span>
+                        <Link
+                            to="/login"
+                            className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider px-4 py-2.5 border border-white/30 rounded-full hover:bg-white/10 transition-all hover:border-white/50"
+                        >
+                            <User size={14} />
+                            <span>Client</span>
                         </Link>
-                        <Link to="/prendre-rdv" className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-3 py-2 bg-gradient-to-r from-[#1044A9] to-[#2962ff] rounded-full shadow-lg shadow-blue-900/20 hover:shadow-blue-900/40 transition-all">
-                            <span>Prendre RDV</span>
-                            <ArrowRight size={12} />
+                        <Link
+                            to="/prendre-rdv"
+                            className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider px-4 py-2.5 bg-gradient-to-r from-[#1044A9] to-[#2962ff] rounded-full shadow-lg shadow-blue-900/30 hover:shadow-blue-900/50 transition-all hover:scale-105"
+                        >
+                            <span>RDV</span>
+                            <ArrowRight size={14} />
                         </Link>
                     </div>
 
                     {/* Right side burger */}
                     <button
-                        className="p-2 text-white hover:text-blue-400 transition-colors ml-auto"
+                        type="button"
+                        className="p-2.5 text-white hover:text-blue-400 transition-colors ml-auto hover:bg-white/10 rounded-lg"
                         onClick={toggleMenu}
                         aria-label="Menu"
                     >
-                        {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
+                        {isMenuOpen ? <X size={26} /> : <Menu size={26} />}
                     </button>
                 </div>
 

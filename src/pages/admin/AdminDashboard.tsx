@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useUser, useClerk } from '@clerk/clerk-react';
-import { Users, Search, Bell, LogOut, ChevronRight, ExternalLink, UserPlus, X, CheckCircle, Loader, FileText, Trash2, Lock, Unlock, Folder, FolderOpen, ArrowLeft } from 'lucide-react';
+import { Users, Search, Bell, LogOut, ChevronRight, ExternalLink, UserPlus, X, CheckCircle, Loader, FileText, Trash2, Lock, Unlock, Folder, FolderOpen, ArrowLeft, TrendingUp, TrendingDown, BarChart3, PieChart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './admin.css';
 import './modern-dashboard.css';
+import './admin-charts.css';
 
 // Admin is hardcoded or determined by metadata in a real app
 // For this demo, we assume any logged in user on /admin is admin or we trust the route protection
@@ -166,6 +167,7 @@ export default function AdminDashboard() {
 
     const [users, setUsers] = useState<User[]>([]);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const [activeView, setActiveView] = useState<'clients' | 'stats'>('clients');
     const [searchTerm, setSearchTerm] = useState('');
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -394,20 +396,22 @@ export default function AdminDashboard() {
                 <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
                     <div className="px-2 py-3 text-xs font-semibold text-white/50 uppercase tracking-wider">Menu Principal</div>
                     <button
-                        onClick={() => { setSelectedUser(null); setIsMobileMenuOpen(false); }}
-                        className={`sidebar-menu-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-white/90 ${!selectedUser ? 'active' : 'hover:bg-white/5'}`}
+                        type="button"
+                        onClick={() => { setActiveView('clients'); setSelectedUser(null); setIsMobileMenuOpen(false); }}
+                        className={`sidebar-menu-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-white/90 ${activeView === 'clients' ? 'active' : 'hover:bg-white/5'}`}
                     >
                         <Users size={18} />
                         Gestion Clients
                     </button>
-                </nav>
-
-                <div className="p-4 border-t border-white/10">
-                    <button type="button" onClick={handleSignOut} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-300 hover:bg-red-500/10 transition-colors w-full">
-                        <LogOut size={18} />
-                        Déconnexion
+                    <button
+                        type="button"
+                        onClick={() => { setActiveView('stats'); setSelectedUser(null); setIsMobileMenuOpen(false); }}
+                        className={`sidebar-menu-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-white/90 ${activeView === 'stats' ? 'active' : 'hover:bg-white/5'}`}
+                    >
+                        <BarChart3 size={18} />
+                        Statistiques
                     </button>
-                </div>
+                </nav>
             </aside>
 
             {/* Main Content */}
@@ -415,25 +419,51 @@ export default function AdminDashboard() {
                 {/* Header */}
                 <header className="modern-header h-16 flex items-center justify-between px-4 md:px-8 shrink-0">
                     <div className="flex items-center gap-3">
-                        <button className="md:hidden p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-lg" onClick={() => setIsMobileMenuOpen(true)}>
+                        {/* Menu Burger Mobile */}
+                        <button
+                            type="button"
+                            className="md:hidden p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                            onClick={() => setIsMobileMenuOpen(true)}
+                        >
                             <div className="space-y-1.5">
-                                <span className="block w-6 h-0.5 bg-current"></span>
-                                <span className="block w-6 h-0.5 bg-current"></span>
-                                <span className="block w-6 h-0.5 bg-current"></span>
+                                <span className="block w-6 h-0.5 bg-current transition-all"></span>
+                                <span className="block w-6 h-0.5 bg-current transition-all"></span>
+                                <span className="block w-6 h-0.5 bg-current transition-all"></span>
                             </div>
                         </button>
-                        <div className="text-lg font-semibold text-gray-800 truncate max-w-[200px] md:max-w-none">
-                            {selectedUser ? `Dossier : ${selectedUser.firstName} ${selectedUser.lastName}` : 'Vue d\'ensemble'}
+
+                        {/* Logo EP2C visible en mobile */}
+                        <div className="md:hidden text-xl font-bold text-[#1044A9]">EP2C</div>
+
+                        {/* Titre desktop */}
+                        <div className="hidden md:block text-lg font-semibold text-gray-800">
+                            {selectedUser ? `Dossier : ${selectedUser.firstName} ${selectedUser.lastName}` : activeView === 'stats' ? 'Statistiques' : 'Gestion des Clients'}
                         </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                        <button className="relative p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors">
+                    <div className="flex items-center gap-2 md:gap-4">
+                        <button type="button" className="relative p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors">
                             <Bell size={20} />
                             <span className="notification-badge"></span>
                         </button>
                         <div className="avatar-modern">
                             AD
                         </div>
+                        <button
+                            type="button"
+                            onClick={handleSignOut}
+                            className="hidden md:flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+                        >
+                            <LogOut size={18} />
+                            <span className="hidden lg:inline">Déconnexion</span>
+                        </button>
+                        {/* Mobile: Icon only */}
+                        <button
+                            type="button"
+                            onClick={handleSignOut}
+                            className="md:hidden p-2 text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                        >
+                            <LogOut size={20} />
+                        </button>
                     </div>
                 </header>
 
@@ -497,13 +527,134 @@ export default function AdminDashboard() {
                                 />
                             </div>
                         </div>
+                    ) : activeView === 'stats' ? (
+                        // STATISTICS VIEW
+                        <div className="mb-8">
+                            <div className="mb-6">
+                                <h1 className="text-2xl font-bold text-gray-900">Statistiques</h1>
+                                <p className="text-gray-500 mt-1">Vue d'ensemble de votre activité</p>
+                            </div>
+
+                            {/* Statistics Section */}
+                            <div className="stats-grid mb-8">
+                                {/* Total Clients */}
+                                <div className="chart-card">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wider">Total Clients</h3>
+                                        <Users size={20} className="text-blue-600" />
+                                    </div>
+                                    <div className="stat-number text-4xl font-bold text-gray-900 mb-2">{users.length}</div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="trend-indicator trend-up">
+                                            <TrendingUp size={14} />
+                                            +12%
+                                        </span>
+                                        <span className="text-xs text-gray-500">vs mois dernier</span>
+                                    </div>
+                                </div>
+
+                                {/* Documents Total */}
+                                <div className="chart-card">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wider">Documents</h3>
+                                        <FileText size={20} className="text-indigo-600" />
+                                    </div>
+                                    <div className="stat-number text-4xl font-bold text-gray-900 mb-2">
+                                        {users.reduce((acc, u) => acc + (u.documents?.length || 0), 0)}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="trend-indicator trend-up">
+                                            <TrendingUp size={14} />
+                                            +8%
+                                        </span>
+                                        <span className="text-xs text-gray-500">cette semaine</span>
+                                    </div>
+                                </div>
+
+                                {/* Active Clients */}
+                                <div className="chart-card">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wider">Clients Actifs</h3>
+                                        <BarChart3 size={20} className="text-green-600" />
+                                    </div>
+                                    <div className="stat-number text-4xl font-bold text-gray-900 mb-2">
+                                        {users.filter(u => u.status === 'Validé').length}
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="trend-indicator trend-neutral">
+                                            <TrendingDown size={14} />
+                                            0%
+                                        </span>
+                                        <span className="text-xs text-gray-500">stable</span>
+                                    </div>
+                                </div>
+
+                                {/* Completion Rate */}
+                                <div className="chart-card">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wider">Taux de Complétion</h3>
+                                        <PieChart size={20} className="text-purple-600" />
+                                    </div>
+                                    <div className="progress-ring">
+                                        <svg className="progress-ring-circle" width="120" height="120">
+                                            <circle className="progress-ring-bg" cx="60" cy="60" r="52" />
+                                            <circle
+                                                className="progress-ring-progress"
+                                                cx="60"
+                                                cy="60"
+                                                r="52"
+                                                stroke="url(#progressGradient)"
+                                                strokeDasharray="326.73"
+                                                strokeDashoffset={326.73 - (326.73 * (users.filter(u => u.status === 'Validé').length / Math.max(users.length, 1)))}
+                                            />
+                                            <defs>
+                                                <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                                    <stop offset="0%" stopColor="#1044A9" />
+                                                    <stop offset="100%" stopColor="#2962ff" />
+                                                </linearGradient>
+                                            </defs>
+                                        </svg>
+                                        <div className="progress-ring-text">
+                                            <div className="progress-ring-value">
+                                                {users.length > 0 ? Math.round((users.filter(u => u.status === 'Validé').length / users.length) * 100) : 0}%
+                                            </div>
+                                            <div className="progress-ring-label">Validés</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Activity Chart */}
+                            <div className="chart-card mb-8">
+                                <div className="flex items-center justify-between mb-6">
+                                    <div>
+                                        <h3 className="text-lg font-bold text-gray-900">Activité des 7 derniers jours</h3>
+                                        <p className="text-sm text-gray-500 mt-1">Nouveaux clients et documents</p>
+                                    </div>
+                                    <BarChart3 size={24} className="text-blue-600" />
+                                </div>
+                                <div className="bar-chart">
+                                    {['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'].map((day) => {
+                                        const height = Math.random() * 80 + 20;
+                                        return (
+                                            <div key={day} className="bar-chart-item">
+                                                <div className="bar-chart-bar" style={{ height: `${height}%` }}>
+                                                    <span className="bar-chart-value">{Math.floor(height / 10)}</span>
+                                                </div>
+                                                <span className="bar-chart-label">{day}</span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
                     ) : (
-                        // USER LIST VIEW
+                        // USER LIST VIEW (CLIENTS)
                         <>
                             <div className="mb-8">
                                 <div className="flex flex-col md:flex-row md:items-start justify-between mb-6 gap-4">
                                     <div>
-                                        <h1 className="text-2xl font-bold text-gray-900">Clients</h1>
+                                        <h1 className="text-2xl font-bold text-gray-900">Gestion des Clients</h1>
                                         <p className="text-gray-500 mt-1">Gérez vos clients et accédez à leurs dossiers.</p>
                                     </div>
                                     <button

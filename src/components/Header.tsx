@@ -31,9 +31,29 @@ export default function Header() {
                     </div>
                 </div>
 
-                {/* Logo Section - Center */}
-                <a href="/" className="logo-section" style={{ textDecoration: 'none', cursor: 'pointer', margin: '0 1rem' }}>
-                    <img src={logoImage} alt="Efficience EP2C - Expertise Paie/RH, Conseil & Coaching" className="logo-image" style={{ height: '70px', width: 'auto' }} />
+                {/* Logo Section - Center on all screens */}
+                <a
+                    href="/"
+                    className="logo-section"
+                    style={{
+                        textDecoration: 'none',
+                        cursor: 'pointer',
+                        margin: '0 auto',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center'
+                    }}
+                >
+                    <img
+                        src={logoImage}
+                        alt="Efficience EP2C - Expertise Paie/RH, Conseil & Coaching"
+                        className="logo-image"
+                        style={{
+                            height: '70px',
+                            width: 'auto',
+                            maxWidth: '100%'
+                        }}
+                    />
                 </a>
 
                 {/* Right Contact: Address - Hidden on Mobile */}
