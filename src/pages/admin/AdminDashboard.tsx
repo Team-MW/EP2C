@@ -403,7 +403,7 @@ export default function AdminDashboard() {
                 </nav>
 
                 <div className="p-4 border-t border-white/10">
-                    <button onClick={handleSignOut} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-300 hover:bg-red-500/10 transition-colors w-full">
+                    <button type="button" onClick={handleSignOut} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-300 hover:bg-red-500/10 transition-colors w-full">
                         <LogOut size={18} />
                         Déconnexion
                     </button>

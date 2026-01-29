@@ -1,6 +1,6 @@
 import DashboardLayout from '../../layouts/DashboardLayout';
 import { useUser } from '@clerk/clerk-react';
-import { FileCheck, Clock, FileText, Upload } from 'lucide-react';
+import { FileCheck, Clock, FileText, Upload, Folder } from 'lucide-react';
 import React, { useState, useEffect, useRef } from 'react';
 import emailjs from '@emailjs/browser';
 import '../admin/modern-dashboard.css';
@@ -235,21 +235,20 @@ export default function ClientDashboard() {
             {/* Stats Overview */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
                 {/* Bloc 1: Documents déposés aujourd'hui */}
-                <div className="stat-card-modern bg-gradient-to-br from-[#1044A9] to-[#2563eb] p-6 rounded-2xl shadow-lg text-white transform hover:scale-[1.02] transition-transform cursor-pointer">
+                <div className="stat-card-modern bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                     <div className="flex justify-between items-start mb-4">
-                        <div className="stat-icon-modern p-3 bg-white/20 rounded-xl">
-                            <Upload size={24} className="text-white" />
+                        <div className="stat-icon-modern p-3 bg-blue-50 rounded-xl">
+                            <Upload size={24} className="text-blue-600" />
                         </div>
-                        <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-semibold">Aujourd'hui</span>
                     </div>
-                    <div className="text-3xl font-bold mb-1">
+                    <div className="text-3xl font-bold text-gray-900 mb-1">
                         {documents.filter(d => {
                             const docDate = new Date(d.createdAt);
                             const today = new Date();
                             return docDate.toDateString() === today.toDateString();
                         }).length}
                     </div>
-                    <div className="text-blue-100 text-sm">Documents déposés aujourd'hui</div>
+                    <div className="text-gray-500 text-sm">Documents déposés aujourd'hui</div>
                 </div>
 
                 {/* Bloc 2: Total des documents */}
@@ -284,21 +283,24 @@ export default function ClientDashboard() {
                     Choisissez le dossier de destination et déposez vos fichiers.
                 </p>
 
-                <div className="flex flex-col md:flex-row gap-4 mb-6 items-center">
-                    <div className="w-full md:w-1/3">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Dossier / Catégorie</label>
+                <div className="flex flex-col md:flex-row gap-4 mb-6 items-start">
+                    <div className="w-full md:w-auto md:min-w-[280px]">
+                        <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                            <Folder size={16} className="text-blue-600" />
+                            Dossier / Catégorie
+                        </label>
                         <select
-                            className="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5"
+                            className="w-full bg-white border-2 border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 px-4 py-3 font-medium shadow-sm hover:border-blue-300 transition-all cursor-pointer"
                             value={selectedCategory}
                             onChange={(e) => setSelectedCategory(e.target.value)}
                         >
-                            <option value="Autre">Autre (Défaut)</option>
-                            <option value="Fiche de paye">Fiche de paye</option>
-                            <option value="Bilan">Bilan Comptable</option>
-                            <option value="Juridique">Juridique / K-Bis</option>
-                            <option value="Urssaf">URSSAF / Charges</option>
-                            <option value="Impôts">Impôts / Fiscal</option>
-                            <option value="Banque">Relevés Bancaires</option>
+                            <option value="Autre">📁 Autre (Défaut)</option>
+                            <option value="Fiche de paye">💰 Fiche de paye</option>
+                            <option value="Bilan">📊 Bilan Comptable</option>
+                            <option value="Juridique">⚖️ Juridique / K-Bis</option>
+                            <option value="Urssaf">🏛️ URSSAF / Charges</option>
+                            <option value="Impôts">💼 Impôts / Fiscal</option>
+                            <option value="Banque">🏦 Relevés Bancaires</option>
                         </select>
                     </div>
                 </div>
