@@ -25,10 +25,18 @@ export default function MentionsLegales() {
                                     En vertu de l'article 6 de la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique, il est précisé aux utilisateurs du site internet <strong>Efficience EP2C</strong> l'identité des différents intervenants dans le cadre de sa réalisation et de son suivi :
                                 </p>
                                 <ul className="legal-list">
-                                    <li><strong>Propriétaire du site :</strong> Efficience EP2C</li>
-                                    <li><strong>Adresse :</strong> PARC EUREKA, LE GENESIS 97 RUE DE FREYR, 34000 MONTPELLIER</li>
-                                    <li><strong>Téléphone :</strong> +33 6 59 24 73 70</li>
-                                    <li><strong>Email :</strong> contact@efficience-ep2c.com</li>
+                                    <li><strong>Dénomination sociale :</strong> EP2C GROUP</li>
+                                    <li><strong>Forme juridique :</strong> SAS, société par actions simplifiée</li>
+                                    <li><strong>Capital social :</strong> 42 939 235,00 €</li>
+                                    <li><strong>Adresse du siège :</strong> 4 RUE DE LA TUILERIE, 31130 BALMA</li>
+                                    <li><strong>SIREN :</strong> 904 925 724</li>
+                                    <li><strong>SIRET (siège) :</strong> 904 925 724 00018</li>
+                                    <li><strong>RCS :</strong> 904 925 724 R.C.S. Toulouse</li>
+                                    <li><strong>Activité :</strong> Autres activités des services financiers, hors assurance et caisses de retraite, n.c.a.</li>
+                                    <li><strong>TVA Intracommunautaire :</strong> FR63904925724</li>
+                                    <li><strong>Date de création :</strong> 28/10/2021</li>
+                                    <li><strong>Dirigeants :</strong> OGCS PARTNER, CLF HOLDING</li>
+                                    <li><strong>Contact :</strong> contact@efficience-ep2c.com / +33 6 59 24 73 70</li>
                                 </ul>
                             </section>
 

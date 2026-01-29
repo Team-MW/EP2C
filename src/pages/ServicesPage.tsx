@@ -1,6 +1,7 @@
 import Layout from '../Layout';
 import SEO from '../components/SEO';
 import Reveal from '../components/Reveal';
+import FAQItem from '../components/FAQItem';
 import { services } from '../data/services';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
@@ -61,6 +62,33 @@ export default function ServicesPage() {
                             </Reveal>
                         ))}
                     </div>
+                </div>
+            </section>
+
+            {/* General FAQ Section */}
+            <section className="py-20 bg-gray-50">
+                <div className="container mx-auto px-4 max-w-3xl">
+                    <Reveal>
+                        <h2 className="text-3xl font-serif font-bold text-center mb-10 text-gray-900">Questions Fréquentes sur nos Services</h2>
+                        <div className="space-y-4">
+                            <FAQItem
+                                question="Comment savoir de quel service j'ai besoin ?"
+                                answer="Nous commençons toujours par un audit ou un entretien de découverte gratuit pour analyser votre situation et vous orienter vers la solution la plus adaptée (externalisation, formation, coaching...)."
+                            />
+                            <FAQItem
+                                question="Intervenez-vous partout en France ?"
+                                answer="Oui, notre siège est à Montpellier, mais nous accompagnons des entreprises sur tout le territoire national, aussi bien en présentiel qu'à distance grâce à nos outils digitaux."
+                            />
+                            <FAQItem
+                                question="Proposez-vous des offres sur-mesure ?"
+                                answer="Absolument. Chaque entreprise est unique, c'est pourquoi nous adaptons nos interventions, nos formations et nos accompagnements à vos enjeux spécifiques et à votre culture d'entreprise."
+                            />
+                            <FAQItem
+                                question="Quels sont vos délais de mise en place ?"
+                                answer="Cela dépend du service. Pour une mission de conseil ou d'audit, nous pouvons généralement intervenir sous 1 à 2 semaines. Pour l'externalisation de la paie, nous établissons un calendrier de reprise précis."
+                            />
+                        </div>
+                    </Reveal>
                 </div>
             </section>
         </Layout>

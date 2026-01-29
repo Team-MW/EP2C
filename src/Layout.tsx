@@ -2,6 +2,7 @@ import React from 'react';
 import Header from './components/Header';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import WhatsAppButton from './components/WhatsAppButton';
 
 interface LayoutProps {
     children: React.ReactNode;
@@ -15,6 +16,7 @@ export default function Layout({ children }: LayoutProps) {
             <main className="main-content">
                 {children}
             </main>
+            <WhatsAppButton />
             <Footer />
         </div>
     );

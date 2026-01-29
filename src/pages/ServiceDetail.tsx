@@ -1,5 +1,32 @@
+import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, ChevronDown, ChevronUp } from 'lucide-react';
+
+function FAQItem({ question, answer }: { question: string, answer: string }) {
+    const [isOpen, setIsOpen] = useState(false);
+
+    return (
+        <div className="border border-gray-200 rounded-lg overflow-hidden transition-all duration-300 hover:shadow-md bg-white">
+            <button
+                className="w-full flex justify-between items-center p-5 text-left bg-white hover:bg-gray-50 transition-colors"
+                onClick={() => setIsOpen(!isOpen)}
+            >
+                <span className="font-semibold text-gray-800 text-lg">{question}</span>
+                {isOpen ? (
+                    <ChevronUp className="text-[#1044A9]" size={20} />
+                ) : (
+                    <ChevronDown className="text-gray-400" size={20} />
+                )}
+            </button>
+            <div
+                className={`transition-all duration-300 ease-in-out text-gray-600 overflow-hidden ${isOpen ? 'max-h-40 opacity-100 p-5 pt-0 border-t border-gray-100' : 'max-h-0 opacity-0'
+                    }`}
+            >
+                {answer}
+            </div>
+        </div>
+    );
+}
 import Layout from '../Layout';
 import { services } from '../data/services';
 import Reveal from '../components/Reveal';
@@ -113,6 +140,20 @@ export default function ServiceDetail() {
                                         </li>
                                     ))}
                                 </ul>
+                            </div>
+                        </Reveal>
+                    )}
+
+                    {/* FAQ Section */}
+                    {service.faq && service.faq.length > 0 && (
+                        <Reveal delay="delay-300">
+                            <div className="mt-20 max-w-3xl mx-auto">
+                                <h3 className="text-3xl font-serif font-bold text-center mb-10 text-gray-900">Questions Fréquentes</h3>
+                                <div className="space-y-4">
+                                    {service.faq.map((item, idx) => (
+                                        <FAQItem key={idx} question={item.question} answer={item.answer} />
+                                    ))}
+                                </div>
                             </div>
                         </Reveal>
                     )}

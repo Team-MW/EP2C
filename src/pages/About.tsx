@@ -1,7 +1,7 @@
 import Layout from '../Layout';
 import SEO from '../components/SEO';
 import Reveal from '../components/Reveal';
-import { Target, Heart, Users, Globe } from 'lucide-react';
+import { Target, Heart, Globe } from 'lucide-react';
 
 export default function About() {
     return (
@@ -269,29 +269,7 @@ export default function About() {
             </section>
 
             {/* Team Placeholder */}
-            <section className="team-section">
-                <div className="container text-center">
-                    <Reveal>
-                        <h2 className="section-heading mb-12">L'Équipe Dirigeante 👥</h2>
-                    </Reveal>
-                    <div className="team-grid">
-                        {[1, 2, 3, 4].map((item) => (
-                            <Reveal key={item} delay={`delay-${item * 100}`}>
-                                <div className="team-member-card">
-                                    <div className="team-img-placeholder">
-                                        <div className="placeholder-content">
-                                            <Users size={32} />
-                                        </div>
-                                    </div>
-                                    <h3 className="team-name">Membre {item}</h3>
-                                    <p className="team-role">Expert Associé</p>
-                                    <p className="team-bio">Spécialiste en transformation et stratégie.</p>
-                                </div>
-                            </Reveal>
-                        ))}
-                    </div>
-                </div>
-            </section>
+
         </Layout>
     );
 }

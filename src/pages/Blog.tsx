@@ -1,6 +1,7 @@
 import Layout from '../Layout';
 import SEO from '../components/SEO';
 import Reveal from '../components/Reveal';
+import FAQItem from '../components/FAQItem';
 import { Calendar, User, ArrowRight } from 'lucide-react';
 
 const blogPosts = [
@@ -100,6 +101,29 @@ export default function Blog() {
                             Charger plus d'articles
                         </button>
                     </div>
+                </div>
+            </section>
+
+            {/* FAQ Section */}
+            <section className="py-20 bg-gray-50">
+                <div className="container mx-auto px-4 max-w-3xl">
+                    <Reveal>
+                        <h2 className="text-3xl font-serif font-bold text-center mb-10 text-gray-900">Questions Fréquentes</h2>
+                        <div className="space-y-4">
+                            <FAQItem
+                                question="À quelle fréquence publiez-vous des articles ?"
+                                answer="Nous publions de nouveaux articles chaque semaine pour vous tenir informé des dernières actualités sociales, juridiques et managériales."
+                            />
+                            <FAQItem
+                                question="Puis-je m'abonner à une newsletter ?"
+                                answer="Oui, vous pouvez vous inscrire à notre newsletter mensuelle via le formulaire en bas de page pour recevoir nos derniers articles directement dans votre boîte mail."
+                            />
+                            <FAQItem
+                                question="Acceptez-vous les articles invités ?"
+                                answer="Nous sommes ouverts aux collaborations avec des experts du domaine RH et juridique. N'hésitez pas à nous contacter via le formulaire de contact pour nous proposer un sujet."
+                            />
+                        </div>
+                    </Reveal>
                 </div>
             </section>
         </Layout>

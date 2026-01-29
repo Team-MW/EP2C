@@ -5,14 +5,9 @@ export default function Header() {
     return (
         <header className="site-header">
             <div className="container header-container">
-                {/* Logo Section */}
-                <a href="/" className="logo-section" style={{ textDecoration: 'none', cursor: 'pointer' }}>
-                    <img src={logoImage} alt="Efficience EP2C - Expertise Paie/RH, Conseil & Coaching" className="logo-image" style={{ height: '60px', width: 'auto' }} />
-                </a>
 
-                {/* Contact Info Section - Hidden on Mobile */}
-                <div className="contact-section hidden md:flex">
-
+                {/* Left Contact: Phone & Email - Hidden on Mobile */}
+                <div className="contact-group-left hidden md:flex" style={{ display: 'flex', gap: '1.5rem', alignItems: 'center' }}>
                     <div className="contact-item">
                         <div className="icon-circle">
                             <Phone size={20} />
@@ -34,21 +29,26 @@ export default function Header() {
                             <span className="contact-sub">contact@efficience-ep2c.com</span>
                         </div>
                     </div>
+                </div>
 
-                    <div className="separator"></div>
+                {/* Logo Section - Center */}
+                <a href="/" className="logo-section" style={{ textDecoration: 'none', cursor: 'pointer', margin: '0 1rem' }}>
+                    <img src={logoImage} alt="Efficience EP2C - Expertise Paie/RH, Conseil & Coaching" className="logo-image" style={{ height: '70px', width: 'auto' }} />
+                </a>
 
+                {/* Right Contact: Address - Hidden on Mobile */}
+                <div className="contact-group-right hidden md:flex" style={{ display: 'flex', alignItems: 'center' }}>
                     <div className="contact-item">
                         <div className="icon-circle">
                             <MapPin size={20} />
                         </div>
-                        <div className="contact-text">
+                        <div className="contact-text" style={{ textAlign: 'right', alignItems: 'flex-end' }}>
                             <span className="contact-main">Parc Eureka</span>
-                            <span className="contact-sub">le Genesis 97 rue de Freyr</span>
-                            <span className="contact-sub">34000 Montpellier</span>
+                            <span className="contact-sub">le Genesis 97 rue de Freyr, 34000 Montpellier</span>
                         </div>
                     </div>
-
                 </div>
+
             </div>
         </header>
     );
