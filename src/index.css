@@ -1606,6 +1606,25 @@ ul {
   }
 }
 
+/* Slow Pulse Animation for Futuristic Backgrounds */
+@keyframes pulse-slow {
+
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.25;
+    transform: scale(1.05);
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 8s ease-in-out infinite;
+}
+
 /* Apply pulse to the Fixed WhatsApp component through its style or class */
 /* Note: The component uses inline styles, but we can target it via attributes if needed, 
    or ideally update the component class directly. */

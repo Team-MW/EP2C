@@ -19,15 +19,8 @@ export default function Hero() {
             {/* Main Content */}
             <div className="container relative z-10 h-full flex flex-col justify-center px-6">
 
-                <div className="max-w-4xl">
+                <div className="max-w-4xl mt-[-80px]">
                     <Reveal>
-                        <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-blue-900/20 border border-blue-500/20 text-sm font-semibold text-blue-400 mb-8 backdrop-blur-sm shadow-xl shadow-blue-900/10">
-                            <span className="relative flex h-2 w-2">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-                            </span>
-                            Expertise Paie & RH
-                        </div>
                         <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-bold leading-[0.9] text-white mb-8 tracking-tight">
                             Booster <br />
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400">

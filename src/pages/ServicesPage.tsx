@@ -4,7 +4,7 @@ import Reveal from '../components/Reveal';
 import FAQItem from '../components/FAQItem';
 import { services } from '../data/services';
 import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Sparkles } from 'lucide-react';
 
 export default function ServicesPage() {
     return (
@@ -15,47 +15,87 @@ export default function ServicesPage() {
                 keywords="services RH, gestion paie, formation professionnelle, audit social, coaching dirigeant, conseil entreprise, expertise sociale"
                 url='https://www.efficience-ep2c.com/services'
             />
-            {/* Hero Section */}
-            <div className="services-hero">
-                <div className="services-hero-bg"></div>
-                <div className="services-hero-content">
+            {/* Futuristic Hero Section */}
+            <section className="relative w-full h-[60vh] min-h-[500px] flex items-center bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a] text-white overflow-hidden">
+                {/* Animated Background */}
+                <div className="absolute inset-0 z-0">
+                    <div className="absolute top-[-10%] right-[-5%] w-[700px] h-[700px] bg-[#1044A9] rounded-full filter blur-[140px] opacity-20 animate-pulse-slow"></div>
+                    <div className="absolute bottom-[-10%] left-[-5%] w-[600px] h-[600px] bg-[#2962ff] rounded-full filter blur-[120px] opacity-20 animate-pulse-slow" style={{ animationDelay: '1.5s' }}></div>
+
+                    {/* Grid Pattern */}
+                    <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px] [mask-image:radial-gradient(ellipse_80%_50%_at_50%_50%,black,transparent)]"></div>
+                </div>
+
+                {/* Hero Content */}
+                <div className="container relative z-10 px-6">
                     <Reveal>
-                        <h1 className="services-hero-title">Nos Expertises 🚀</h1>
-                        <p className="services-hero-subtitle">
-                            Une offre globale à 360° pour couvrir tous vos besoins
-                        </p>
+                        <div className="max-w-4xl mx-auto text-center">
+                            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/10 border border-blue-500/20 text-sm font-semibold text-blue-400 mb-6 backdrop-blur-sm">
+                                <Sparkles size={16} className="animate-pulse" />
+                                <span>Nos Expertises</span>
+                            </div>
+                            <h1 className="text-5xl md:text-7xl font-bold leading-tight mb-6">
+                                Des Solutions <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400">360°</span>
+                            </h1>
+                            <p className="text-xl md:text-2xl text-gray-300 font-light leading-relaxed max-w-3xl mx-auto">
+                                Une offre globale pour couvrir tous vos besoins en RH, Paie, Formation et Coaching
+                            </p>
+                        </div>
                     </Reveal>
                 </div>
-            </div>
+            </section>
 
-            {/* Services Grid */}
-            <section className="services-page-section">
-                <div className="container">
-                    <div className="services-page-grid">
+            {/* Services Grid - Modern 3D Cards */}
+            <section className="relative py-24 bg-gradient-to-b from-white via-gray-50 to-white overflow-hidden">
+                {/* Background Decoration */}
+                <div className="absolute top-0 left-0 w-full h-full opacity-20">
+                    <div className="absolute top-40 left-20 w-96 h-96 bg-blue-200 rounded-full filter blur-[120px]"></div>
+                    <div className="absolute bottom-40 right-20 w-96 h-96 bg-purple-200 rounded-full filter blur-[120px]"></div>
+                </div>
+
+                <div className="container relative z-10">
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {services.map((service, index) => (
                             <Reveal key={service.id} delay={`delay-${index * 100}`}>
-                                <Link to={`/services/${service.slug}`} className="service-page-link">
-                                    <div className="service-page-card group">
-                                        <div className="service-card-image-wrapper">
-                                            <div
-                                                className="service-card-bg"
-                                                style={{ backgroundImage: `url('${service.image}')` }}
-                                            ></div>
-                                            <div className="service-card-overlay"></div>
-                                            <div className="service-card-icon">
-                                                <service.icon size={20} />
+                                <Link to={`/services/${service.slug}`} className="block group">
+                                    <div className="relative h-full">
+                                        {/* Glow Effect */}
+                                        <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-3xl blur-xl opacity-0 group-hover:opacity-30 transition-opacity duration-500"></div>
+
+                                        {/* Card */}
+                                        <div className="relative bg-white rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 group-hover:-translate-y-2 border border-gray-100">
+                                            {/* Image Section */}
+                                            <div className="relative h-48 overflow-hidden">
+                                                <div
+                                                    className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110"
+                                                    style={{ backgroundImage: `url('${service.image}')` }}
+                                                ></div>
+                                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+
+                                                {/* Icon */}
+                                                <div className="absolute top-4 left-4 w-12 h-12 bg-white/90 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-500">
+                                                    <service.icon size={24} className="text-blue-600" />
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div className="service-card-body">
-                                            <h3 className="service-card-title">
-                                                {service.title}
-                                            </h3>
-                                            <p className="service-card-desc">
-                                                {service.description}
-                                            </p>
-                                            <div className="service-card-footer">
-                                                En savoir plus <ArrowRight size={16} className="arrow-icon" />
+
+                                            {/* Content Section */}
+                                            <div className="p-6">
+                                                <h3 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors duration-300">
+                                                    {service.title}
+                                                </h3>
+                                                <p className="text-gray-600 leading-relaxed mb-4">
+                                                    {service.description}
+                                                </p>
+
+                                                {/* CTA */}
+                                                <div className="flex items-center gap-2 text-blue-600 font-semibold group-hover:gap-4 transition-all duration-300">
+                                                    <span>En savoir plus</span>
+                                                    <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform duration-300" />
+                                                </div>
                                             </div>
+
+                                            {/* Decorative Element */}
+                                            <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
                                         </div>
                                     </div>
                                 </Link>
