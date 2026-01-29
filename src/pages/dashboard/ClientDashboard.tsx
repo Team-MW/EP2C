@@ -67,6 +67,7 @@ export default function ClientDashboard() {
     const [isUploading, setIsUploading] = useState(false);
     const [showSuccessNotification, setShowSuccessNotification] = useState(false);
     const [uploadedFileName, setUploadedFileName] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState<string>('Autre');
 
     const triggerFileInput = () => {
         fileInputRef.current?.click();
@@ -79,6 +80,7 @@ export default function ClientDashboard() {
         const formData = new FormData();
         formData.append('file', file);
         formData.append('userId', dbUser.id.toString());
+        formData.append('category', selectedCategory);
 
         setIsUploading(true);
         setUploadProgress(0);
@@ -275,14 +277,32 @@ export default function ClientDashboard() {
             </div>
 
             {/* Upload Section - PRIMARY ACTION */}
-            <div className="bg-white p-8 rounded-2xl shadow-lg border border-blue-100 mb-10 text-center relative overflow-hidden group">
+            <div className="bg-white p-8 rounded-2xl shadow-lg border border-blue-100 mb-10 relative overflow-hidden group">
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-[#1044A9]"></div>
 
                 <h3 className="text-xl font-bold text-gray-900 mb-2">Déposer vos documents</h3>
-                <p className="text-gray-500 mb-8 max-w-lg mx-auto">
-                    Glissez-déposez vos fichiers ici (PDF, JPG) ou cliquez pour parcourir.
-                    <br /><span className="text-sm text-gray-400">Pour tout dossier de création ou de modification.</span>
+                <p className="text-gray-500 mb-6 max-w-lg">
+                    Choisissez le dossier de destination et déposez vos fichiers.
                 </p>
+
+                <div className="flex flex-col md:flex-row gap-4 mb-6 items-center">
+                    <div className="w-full md:w-1/3">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Dossier / Catégorie</label>
+                        <select
+                            className="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5"
+                            value={selectedCategory}
+                            onChange={(e) => setSelectedCategory(e.target.value)}
+                        >
+                            <option value="Autre">Autre (Défaut)</option>
+                            <option value="Fiche de paye">Fiche de paye</option>
+                            <option value="Bilan">Bilan Comptable</option>
+                            <option value="Juridique">Juridique / K-Bis</option>
+                            <option value="Urssaf">URSSAF / Charges</option>
+                            <option value="Impôts">Impôts / Fiscal</option>
+                            <option value="Banque">Relevés Bancaires</option>
+                        </select>
+                    </div>
+                </div>
 
                 <input
                     type="file"
@@ -299,7 +319,9 @@ export default function ClientDashboard() {
                     <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm text-[#1044A9]">
                         <Upload size={32} />
                     </div>
-                    <span className="font-semibold text-[#1044A9]">Cliquez pour ajouter des fichiers</span>
+                    <span className="font-semibold text-[#1044A9]">
+                        Cliquez pour ajouter un document dans : <span className="underline">{selectedCategory}</span>
+                    </span>
                 </div>
             </div>
 

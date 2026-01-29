@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useUser, useClerk } from '@clerk/clerk-react';
-import { Users, Search, Bell, LogOut, ChevronRight, ExternalLink, UserPlus, X, CheckCircle, Loader, FileText, Trash2, Lock, Unlock } from 'lucide-react';
+import { Users, Search, Bell, LogOut, ChevronRight, ExternalLink, UserPlus, X, CheckCircle, Loader, FileText, Trash2, Lock, Unlock, Folder, FolderOpen, ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import './admin.css';
 
@@ -31,6 +31,132 @@ interface User {
     documents: Document[];
     role: string;
 }
+
+const DocumentManager = ({ documents, onDelete }: { documents: Document[], onDelete: (id: number, name: string) => void }) => {
+    const [view, setView] = useState<'folders' | 'files'>('folders');
+    const [currentFolder, setCurrentFolder] = useState<string | null>(null);
+
+    // Group documents by category
+    const groupedDocs = React.useMemo(() => {
+        const groups: Record<string, Document[]> = {};
+
+        documents.forEach(doc => {
+            const match = doc.name.match(/^\[(.*?)\]\s*(.*)/);
+            let category = 'Autre';
+            let cleanName = doc.name;
+
+            if (match) {
+                category = match[1];
+                cleanName = match[2];
+            }
+
+            if (!groups[category]) {
+                groups[category] = [];
+            }
+            groups[category].push({ ...doc, name: cleanName }); // Use clean name for display? Or keep original? Let's use clean name for display but keep ID.
+        });
+
+        // Ensure default folders exist if empty? No, only show what exists + maybe standard ones if we want to encourage structure.
+        // Let's stick to what exists for now.
+        return groups;
+    }, [documents]);
+
+    const folders = Object.keys(groupedDocs).sort();
+
+    if (view === 'folders') {
+        return (
+            <div className="p-6">
+                <h4 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Dossiers</h4>
+                {folders.length === 0 ? (
+                    <div className="text-center py-10 text-gray-400">
+                        <Folder size={48} className="mx-auto mb-3 opacity-20" />
+                        <p>Aucun dossier pour le moment.</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {folders.map(folder => (
+                            <button
+                                key={folder}
+                                onClick={() => { setCurrentFolder(folder); setView('files'); }}
+                                className="flex flex-col items-center justify-center p-6 bg-blue-50/50 hover:bg-blue-100 border border-blue-100 rounded-xl transition-all group"
+                            >
+                                <Folder size={40} className="text-blue-400 group-hover:text-blue-600 mb-2 transition-colors" />
+                                <span className="font-medium text-gray-700 group-hover:text-blue-800">{folder}</span>
+                                <span className="text-xs text-gray-400 mt-1">{groupedDocs[folder].length} fichier(s)</span>
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    return (
+        <div className="flex flex-col h-full">
+            <div className="flex items-center gap-2 p-4 border-b border-gray-100 bg-gray-50/50">
+                <button
+                    onClick={() => { setView('folders'); setCurrentFolder(null); }}
+                    className="p-1 hover:bg-gray-200 rounded-full transition-colors"
+                >
+                    <ArrowLeft size={18} className="text-gray-600" />
+                </button>
+                <div className="flex items-center gap-2 text-sm">
+                    <span className="text-gray-500 flex items-center gap-1"><Folder size={14} /> Dossiers</span>
+                    <ChevronRight size={14} className="text-gray-400" />
+                    <span className="font-semibold text-gray-900 flex items-center gap-1"><FolderOpen size={14} /> {currentFolder}</span>
+                </div>
+            </div>
+
+            <div className="flex-1 overflow-auto">
+                <table className="w-full text-left text-sm">
+                    <thead className="bg-gray-50 border-b border-gray-100 text-gray-500 sticky top-0">
+                        <tr>
+                            <th className="px-6 py-3 font-medium">Nom du fichier</th>
+                            <th className="px-6 py-3 font-medium">Type</th>
+                            <th className="px-6 py-3 font-medium">Taille</th>
+                            <th className="px-6 py-3 font-medium">Date</th>
+                            <th className="px-6 py-3 font-medium text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                        {groupedDocs[currentFolder!]?.map(doc => (
+                            <tr key={doc.id} className="hover:bg-gray-50/50 transition-colors">
+                                <td className="px-6 py-4 font-medium text-gray-900 flex items-center gap-3">
+                                    <FileText size={16} className="text-indigo-500" />
+                                    {doc.name}
+                                </td>
+                                <td className="px-6 py-4 text-gray-500 uppercase text-xs font-semibold">{doc.type}</td>
+                                <td className="px-6 py-4 text-gray-500 tabular-nums">{doc.size}</td>
+                                <td className="px-6 py-4 text-gray-500 tabular-nums">{new Date(doc.createdAt).toLocaleDateString()}</td>
+                                <td className="px-6 py-4 text-right">
+                                    <div className="flex items-center justify-end gap-2">
+                                        <a
+                                            href={doc.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium text-xs border border-blue-200 hover:border-blue-300 bg-blue-50 px-3 py-1.5 rounded-md transition-all"
+                                        >
+                                            Voir <ExternalLink size={12} />
+                                        </a>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onDelete(doc.id, `[${currentFolder}] ${doc.name}`); // Reconstruct full name for delete confirmation message or just pass ID
+                                            }}
+                                            className="inline-flex items-center gap-1 text-red-600 hover:text-red-800 font-medium text-xs border border-red-200 hover:border-red-300 bg-red-50 px-3 py-1.5 rounded-md transition-all"
+                                        >
+                                            <Trash2 size={12} />
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+};
 
 export default function AdminDashboard() {
     const { isLoaded } = useUser();
@@ -354,61 +480,11 @@ export default function AdminDashboard() {
                                 <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs">{selectedUser.documents?.length || 0}</span>
                             </h3>
 
-                            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                                <div className="overflow-x-auto"> {/* Added wrapper for overflow */}
-                                    {selectedUser.documents && selectedUser.documents.length > 0 ? (
-                                        <table className="w-full text-left text-sm">
-                                            <thead className="bg-gray-50 border-b border-gray-100 text-gray-500">
-                                                <tr>
-                                                    <th className="px-6 py-3 font-medium">Nom du fichier</th>
-                                                    <th className="px-6 py-3 font-medium">Type</th>
-                                                    <th className="px-6 py-3 font-medium">Taille</th>
-                                                    <th className="px-6 py-3 font-medium">Date d'envoi</th>
-                                                    <th className="px-6 py-3 font-medium text-right">Actions</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-gray-100">
-                                                {selectedUser.documents.map(doc => (
-                                                    <tr key={doc.id} className="hover:bg-gray-50/50 transition-colors">
-                                                        <td className="px-6 py-4 font-medium text-gray-900 flex items-center gap-3">
-                                                            <FileText size={16} className="text-indigo-500" />
-                                                            {doc.name}
-                                                        </td>
-                                                        <td className="px-6 py-4 text-gray-500 uppercase text-xs font-semibold">{doc.type}</td>
-                                                        <td className="px-6 py-4 text-gray-500 tabular-nums">{doc.size}</td>
-                                                        <td className="px-6 py-4 text-gray-500 tabular-nums">{new Date(doc.createdAt).toLocaleDateString()}</td>
-                                                        <td className="px-6 py-4 text-right">
-                                                            <div className="flex items-center justify-end gap-2">
-                                                                <a
-                                                                    href={doc.url}
-                                                                    target="_blank"
-                                                                    rel="noopener noreferrer"
-                                                                    className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium text-xs border border-blue-200 hover:border-blue-300 bg-blue-50 px-3 py-1.5 rounded-md transition-all"
-                                                                >
-                                                                    Voir <ExternalLink size={12} />
-                                                                </a>
-                                                                <button
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        handleDeleteDocument(doc.id, doc.name);
-                                                                    }}
-                                                                    className="inline-flex items-center gap-1 text-red-600 hover:text-red-800 font-medium text-xs border border-red-200 hover:border-red-300 bg-red-50 px-3 py-1.5 rounded-md transition-all"
-                                                                >
-                                                                    <Trash2 size={12} />
-                                                                </button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    ) : (
-                                        <div className="p-12 text-center text-gray-400">
-                                            <FileText size={48} className="mx-auto mb-3 opacity-20" />
-                                            <p>Aucun document disponible pour ce dossier.</p>
-                                        </div>
-                                    )}
-                                </div>
+                            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden min-h-[400px]">
+                                <DocumentManager
+                                    documents={selectedUser.documents || []}
+                                    onDelete={(id, name) => handleDeleteDocument(id, name)}
+                                />
                             </div>
                         </div>
                     ) : (

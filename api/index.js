@@ -205,9 +205,12 @@ app.post('/api/documents', upload.single('file'), async (req, res) => {
         const result = await uploadFromBuffer(file.buffer);
 
         // 4b. Save Metadata in Prisma
+        const category = req.body.category || 'Autre';
+        const displayName = `[${category}] ${file.originalname}`;
+
         const doc = await prisma.document.create({
             data: {
-                name: file.originalname,
+                name: displayName,
                 type: result.format || 'unknown',
                 size: (result.bytes / 1024 / 1024).toFixed(2) + ' MB',
                 url: result.secure_url,
