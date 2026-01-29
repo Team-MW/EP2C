@@ -7,7 +7,7 @@ export default function Login() {
     return (
         <div className="login-page relative">
 
-            {/* Left Side - Image & Branding */}
+            {/* Left Side - Image & s Branding */}
             <div className="login-visual relative overflow-hidden">
                 {/* Animated Background */}
                 <div className="absolute inset-0 z-0">
