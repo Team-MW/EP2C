@@ -3,6 +3,7 @@ import { useUser } from '@clerk/clerk-react';
 import { FileCheck, Clock, FileText, Upload } from 'lucide-react';
 import React, { useState, useEffect, useRef } from 'react';
 import emailjs from '@emailjs/browser';
+import '../admin/modern-dashboard.css';
 
 // Define types for our DB data
 interface DbDocument {
@@ -182,24 +183,22 @@ export default function ClientDashboard() {
         <DashboardLayout>
             {/* Upload Progress Overlay */}
             {isUploading && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center animate-in fade-in duration-200">
-                    <div className="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
+                <div className="modern-modal-backdrop fixed inset-0 z-50 flex items-center justify-center animate-in fade-in duration-200">
+                    <div className="modern-modal bg-white p-8 max-w-md w-full mx-4">
                         <div className="text-center mb-6">
-                            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Upload className="text-[#1044A9] animate-bounce" size={32} />
+                            <div className="stat-icon-modern w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <Upload className="text-white animate-bounce" size={32} />
                             </div>
                             <h3 className="text-xl font-bold text-gray-900 mb-2">Envoi en cours...</h3>
                             <p className="text-gray-500 text-sm">{uploadedFileName}</p>
                         </div>
 
                         {/* Progress Bar */}
-                        <div className="relative h-3 bg-gray-200 rounded-full overflow-hidden">
+                        <div className="progress-bar-modern">
                             <div
-                                className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#1044A9] to-[#2563eb] transition-all duration-300 ease-out rounded-full"
+                                className="progress-bar-fill"
                                 style={{ width: `${uploadProgress}%` }}
-                            >
-                                <div className="absolute inset-0 bg-white/30 animate-pulse"></div>
-                            </div>
+                            ></div>
                         </div>
                         <p className="text-center text-sm text-gray-600 mt-3 font-semibold">{uploadProgress}%</p>
                     </div>
@@ -236,9 +235,9 @@ export default function ClientDashboard() {
             {/* Stats Overview */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
                 {/* Bloc 1: Documents déposés aujourd'hui */}
-                <div className="bg-gradient-to-br from-[#1044A9] to-[#2563eb] p-6 rounded-2xl shadow-lg text-white transform hover:scale-[1.02] transition-transform cursor-pointer">
+                <div className="stat-card-modern bg-gradient-to-br from-[#1044A9] to-[#2563eb] p-6 rounded-2xl shadow-lg text-white transform hover:scale-[1.02] transition-transform cursor-pointer">
                     <div className="flex justify-between items-start mb-4">
-                        <div className="p-3 bg-white/20 rounded-xl">
+                        <div className="stat-icon-modern p-3 bg-white/20 rounded-xl">
                             <Upload size={24} className="text-white" />
                         </div>
                         <span className="bg-white/20 px-3 py-1 rounded-full text-xs font-semibold">Aujourd'hui</span>
@@ -254,9 +253,9 @@ export default function ClientDashboard() {
                 </div>
 
                 {/* Bloc 2: Total des documents */}
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                <div className="stat-card-modern bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                     <div className="flex justify-between items-start mb-4">
-                        <div className="p-3 bg-indigo-50 rounded-xl">
+                        <div className="stat-icon-modern p-3 bg-indigo-50 rounded-xl">
                             <FileText size={24} className="text-indigo-600" />
                         </div>
                     </div>
@@ -265,9 +264,9 @@ export default function ClientDashboard() {
                 </div>
 
                 {/* Bloc 3: Vide pour l'instant */}
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
+                <div className="stat-card-modern bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                     <div className="flex justify-between items-start mb-4">
-                        <div className="p-3 bg-gray-50 rounded-xl">
+                        <div className="stat-icon-modern p-3 bg-gray-50 rounded-xl">
                             <Clock size={24} className="text-gray-400" />
                         </div>
                     </div>
@@ -313,7 +312,7 @@ export default function ClientDashboard() {
                 />
 
                 <div
-                    className="border-3 border-dashed border-blue-100 rounded-xl p-10 bg-blue-50/50 hover:bg-blue-50 hover:border-blue-300 transition-all cursor-pointer group-hover:scale-[1.01]"
+                    className="upload-zone-modern border-3 border-dashed rounded-xl p-10 transition-all cursor-pointer"
                     onClick={triggerFileInput}
                 >
                     <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm text-[#1044A9]">
