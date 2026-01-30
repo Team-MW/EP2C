@@ -383,7 +383,7 @@ export default function AdminDashboard() {
 
             {/* Sidebar */}
             <aside className={`
-                modern-sidebar fixed md:static inset-y-0 left-0 border-r border-white/10 flex flex-col shrink-0 z-40 w-64 transform transition-transform duration-300 ease-in-out
+                modern-sidebar fixed md:static inset-y-0 left-0 border-r border-white/10 flex flex-col shrink-0 z-50 w-64 transform transition-transform duration-300 ease-in-out
                 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
             `}>
                 <div className="h-16 flex items-center justify-between px-6 border-b border-white/10">
@@ -654,8 +654,8 @@ export default function AdminDashboard() {
                             <div className="mb-8">
                                 <div className="flex flex-col md:flex-row md:items-start justify-between mb-6 gap-4">
                                     <div>
-                                        <h1 className="text-2xl font-bold text-gray-900">Gestion des Clients</h1>
-                                        <p className="text-gray-500 mt-1">Gérez vos clients et accédez à leurs dossiers.</p>
+                                        <h1 className="text-xl md:text-2xl font-bold text-gray-900">Gestion des Clients</h1>
+                                        <p className="text-sm md:text-base text-gray-500 mt-1">Gérez vos clients et accédez à leurs dossiers.</p>
                                     </div>
                                     <button
                                         onClick={() => setShowCreateForm(true)}

@@ -5,7 +5,6 @@
 /* Sidebar Futuriste */
 .modern-sidebar {
     background: linear-gradient(180deg, #1044A9 0%, #0d3685 50%, #1e293b 100%);
-    position: relative;
     overflow: hidden;
 }
 

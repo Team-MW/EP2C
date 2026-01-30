@@ -2540,7 +2540,7 @@ header {
 .service-card-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.6), transparent);
 }
 
 .service-card-icon {
