@@ -468,7 +468,7 @@ export default function AdminDashboard() {
                 </header>
 
                 {/* Content Body */}
-                <div className="flex-1 overflow-auto p-8">
+                <div className="flex-1 overflow-auto p-4 md:p-8">
                     {selectedUser ? (
                         // USER DETAIL VIEW
                         <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -536,7 +536,7 @@ export default function AdminDashboard() {
                             </div>
 
                             {/* Statistics Section */}
-                            <div className="stats-grid mb-8">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
                                 {/* Total Clients */}
                                 <div className="chart-card">
                                     <div className="flex items-center justify-between mb-4">
@@ -667,7 +667,7 @@ export default function AdminDashboard() {
                                 </div>
 
                                 {/* Barre de recherche visible */}
-                                <div className="flex items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+                                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 bg-white p-3 sm:p-4 rounded-xl shadow-sm border border-gray-200">
                                     <div className="search-bar-modern flex-1 relative">
                                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
                                         <input
@@ -678,7 +678,7 @@ export default function AdminDashboard() {
                                             onChange={(e) => setSearchTerm(e.target.value)}
                                         />
                                     </div>
-                                    <div className="text-sm text-gray-500 whitespace-nowrap">
+                                    <div className="text-sm text-gray-500 whitespace-nowrap text-center sm:text-left">
                                         {filteredUsers.length} / <strong className="text-gray-900">{users.length}</strong> clients
                                     </div>
                                 </div>
@@ -728,11 +728,11 @@ export default function AdminDashboard() {
                                     <table className="w-full text-left border-collapse">
                                         <thead className="bg-gray-50/80 text-gray-500 text-xs uppercase tracking-wider font-semibold border-b border-gray-200">
                                             <tr>
-                                                <th className="px-6 py-4">Client</th>
-                                                <th className="px-6 py-4">ID Clerk / Email</th>
-                                                <th className="px-6 py-4">Statut</th>
-                                                <th className="px-6 py-4 text-center">Docs</th>
-                                                <th className="px-6 py-4 text-right">Action</th>
+                                                <th className="px-3 md:px-6 py-4">Client</th>
+                                                <th className="px-3 md:px-6 py-4 hidden lg:table-cell">ID Clerk / Email</th>
+                                                <th className="px-3 md:px-6 py-4 hidden sm:table-cell">Statut</th>
+                                                <th className="px-3 md:px-6 py-4 text-center hidden md:table-cell">Docs</th>
+                                                <th className="px-3 md:px-6 py-4 text-right">Action</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-gray-100">
@@ -742,33 +742,34 @@ export default function AdminDashboard() {
                                                     onClick={() => setSelectedUser(u)}
                                                     className="hover:bg-blue-50/30 transition-colors cursor-pointer group"
                                                 >
-                                                    <td className="px-6 py-4">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 font-bold text-sm group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors">
+                                                    <td className="px-3 md:px-6 py-4">
+                                                        <div className="flex items-center gap-2 md:gap-3">
+                                                            <div className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 font-bold text-xs md:text-sm group-hover:bg-blue-100 group-hover:text-blue-600 transition-colors shrink-0">
                                                                 {u.firstName?.charAt(0) || u.email.charAt(0)}
                                                             </div>
-                                                            <div>
-                                                                <div className="font-semibold text-gray-900">{u.firstName} {u.lastName || ''}</div>
-                                                                <div className="text-xs text-gray-400">{u.company}</div>
+                                                            <div className="min-w-0">
+                                                                <div className="font-semibold text-gray-900 text-sm md:text-base truncate">{u.firstName} {u.lastName || ''}</div>
+                                                                <div className="text-xs text-gray-400 truncate sm:hidden">{u.email}</div>
+                                                                <div className="text-xs text-gray-400 hidden sm:block lg:hidden truncate">{u.company}</div>
                                                             </div>
                                                         </div>
                                                     </td>
-                                                    <td className="px-6 py-4">
+                                                    <td className="px-3 md:px-6 py-4 hidden lg:table-cell">
                                                         <div className="text-sm text-gray-600">{u.email}</div>
                                                         <div className="text-[10px] text-gray-400 font-mono mt-0.5" title={u.clerkId}>{u.clerkId.substring(0, 15)}...</div>
                                                     </td>
-                                                    <td className="px-6 py-4">
+                                                    <td className="px-3 md:px-6 py-4 hidden sm:table-cell">
                                                         <span className={`badge-modern ${u.status === 'Validé' ? 'badge-success' : 'badge-warning'}`}>
                                                             <span className={`w-1.5 h-1.5 rounded-full ${u.status === 'Validé' ? 'bg-white' : 'bg-white'}`}></span>
                                                             {u.status}
                                                         </span>
                                                     </td>
-                                                    <td className="px-6 py-4 text-center">
+                                                    <td className="px-3 md:px-6 py-4 text-center hidden md:table-cell">
                                                         <span className={`inline-flex items-center justify-center min-w-[2rem] h-6 rounded px-1.5 text-xs font-bold ${u.documents?.length > 0 ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}`}>
                                                             {u.documents?.length || 0}
                                                         </span>
                                                     </td>
-                                                    <td className="px-6 py-4 text-right">
+                                                    <td className="px-3 md:px-6 py-4 text-right">
                                                         <div className="flex items-center justify-end gap-2">
                                                             <button
                                                                 onClick={() => setSelectedUser(u)}

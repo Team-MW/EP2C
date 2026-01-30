@@ -3,7 +3,7 @@ import logoImage from '../assets/logo.png';
 
 export default function Header() {
     return (
-        <header className="site-header">
+        <header className="site-header hidden md:block">
             <div className="container header-container">
 
                 {/* Left Contact: Phone & Email - Hidden on Mobile */}
