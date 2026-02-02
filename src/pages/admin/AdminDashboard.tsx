@@ -730,7 +730,7 @@ export default function AdminDashboard() {
                                             <tr>
                                                 <th className="px-3 md:px-6 py-4">Client</th>
                                                 <th className="px-3 md:px-6 py-4 hidden lg:table-cell">ID Clerk / Email</th>
-                                                <th className="px-3 md:px-6 py-4 hidden sm:table-cell">Statut</th>
+                                                <th className="px-3 md:px-6 py-4 hidden sm:table-cell">Activité</th>
                                                 <th className="px-3 md:px-6 py-4 text-center hidden md:table-cell">Docs</th>
                                                 <th className="px-3 md:px-6 py-4 text-right">Action</th>
                                             </tr>
@@ -759,10 +759,37 @@ export default function AdminDashboard() {
                                                         <div className="text-[10px] text-gray-400 font-mono mt-0.5" title={u.clerkId}>{u.clerkId.substring(0, 15)}...</div>
                                                     </td>
                                                     <td className="px-3 md:px-6 py-4 hidden sm:table-cell">
-                                                        <span className={`badge-modern ${u.status === 'Validé' ? 'badge-success' : 'badge-warning'}`}>
-                                                            <span className={`w-1.5 h-1.5 rounded-full ${u.status === 'Validé' ? 'bg-white' : 'bg-white'}`}></span>
-                                                            {u.status}
-                                                        </span>
+                                                        {(() => {
+                                                            const recentDocs = u.documents?.filter(d => {
+                                                                const docDate = new Date(d.createdAt);
+                                                                const now = new Date();
+                                                                const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                                                                return docDate > sevenDaysAgo;
+                                                            }).length || 0;
+
+                                                            if (recentDocs > 0) {
+                                                                return (
+                                                                    <span className="badge-modern badge-success">
+                                                                        <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                                                                        {recentDocs} nouv. doc{recentDocs > 1 ? 's' : ''}
+                                                                    </span>
+                                                                );
+                                                            }
+
+                                                            const lastDoc = u.documents && u.documents.length > 0
+                                                                ? u.documents.reduce((latest, current) => new Date(current.createdAt) > new Date(latest.createdAt) ? current : latest)
+                                                                : null;
+
+                                                            if (lastDoc) {
+                                                                return (
+                                                                    <span className="badge-modern badge-neutral bg-gray-100 text-gray-600 border border-gray-200">
+                                                                        {new Date(lastDoc.createdAt).toLocaleDateString()}
+                                                                    </span>
+                                                                );
+                                                            }
+
+                                                            return <span className="badge-modern bg-gray-50 text-gray-400 border border-gray-100">Inactif</span>;
+                                                        })()}
                                                     </td>
                                                     <td className="px-3 md:px-6 py-4 text-center hidden md:table-cell">
                                                         <span className={`inline-flex items-center justify-center min-w-[2rem] h-6 rounded px-1.5 text-xs font-bold ${u.documents?.length > 0 ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}`}>
