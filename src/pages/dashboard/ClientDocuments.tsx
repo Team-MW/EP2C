@@ -1,5 +1,5 @@
 import DashboardLayout from '../../layouts/DashboardLayout';
-import FileUploader from '../../components/dashboard/FileUploader';
+
 import DocumentList from '../../components/dashboard/DocumentList';
 
 export default function ClientDocuments() {
@@ -13,11 +13,6 @@ export default function ClientDocuments() {
             <div className="grid lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2 space-y-8">
                     <section>
-                        <h3 className="text-lg font-semibold mb-4">Téléverser</h3>
-                        <FileUploader />
-                    </section>
-
-                    <section>
                         <DocumentList />
                     </section>
                 </div>
@@ -26,9 +21,14 @@ export default function ClientDocuments() {
                     <div className="bg-[#1044A9] text-white p-6 rounded-xl shadow-lg">
                         <h3 className="font-bold text-lg mb-2">Besoin d'aide ?</h3>
                         <p className="text-blue-100 text-sm mb-4">Notre équipe support est disponible pour vous accompagner dans la gestion de vos documents.</p>
-                        <button className="w-full bg-white text-[#1044A9] font-semibold py-2 rounded-lg hover:bg-blue-50 transition-colors">
+                        <a
+                            href="https://wa.me/33659247370"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="block w-full text-center border border-white text-white font-semibold py-2 rounded-lg hover:bg-white/10 transition-colors"
+                        >
                             Contacter le support
-                        </button>
+                        </a>
                     </div>
 
                     <div className="bg-white p-6 rounded-xl border border-gray-200">

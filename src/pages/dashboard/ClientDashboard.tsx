@@ -1,6 +1,6 @@
 import DashboardLayout from '../../layouts/DashboardLayout';
 import { useUser } from '@clerk/clerk-react';
-import { FileCheck, Clock, FileText, Upload, Folder } from 'lucide-react';
+import { FileCheck, FileText, Upload, Folder } from 'lucide-react';
 import React, { useState, useEffect, useRef } from 'react';
 import emailjs from '@emailjs/browser';
 import '../admin/modern-dashboard.css';
@@ -236,11 +236,7 @@ export default function ClientDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
                 {/* Bloc 1: Documents déposés aujourd'hui */}
                 <div className="stat-card-modern bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                    <div className="flex justify-between items-start mb-4">
-                        <div className="stat-icon-modern p-3 bg-blue-50 rounded-xl">
-                            <Upload size={24} className="text-blue-600" />
-                        </div>
-                    </div>
+
                     <div className="text-3xl font-bold text-gray-900 mb-1">
                         {documents.filter(d => {
                             const docDate = new Date(d.createdAt);
@@ -253,22 +249,14 @@ export default function ClientDashboard() {
 
                 {/* Bloc 2: Total des documents */}
                 <div className="stat-card-modern bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                    <div className="flex justify-between items-start mb-4">
-                        <div className="stat-icon-modern p-3 bg-indigo-50 rounded-xl">
-                            <FileText size={24} className="text-indigo-600" />
-                        </div>
-                    </div>
+
                     <div className="text-3xl font-bold text-gray-900 mb-1">{documents.length}</div>
                     <div className="text-gray-500 text-sm">Total de documents déposés</div>
                 </div>
 
                 {/* Bloc 3: Vide pour l'instant */}
                 <div className="stat-card-modern bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                    <div className="flex justify-between items-start mb-4">
-                        <div className="stat-icon-modern p-3 bg-gray-50 rounded-xl">
-                            <Clock size={24} className="text-gray-400" />
-                        </div>
-                    </div>
+
                     <div className="text-3xl font-bold text-gray-900 mb-1">-</div>
                     <div className="text-gray-500 text-sm">À venir</div>
                 </div>
