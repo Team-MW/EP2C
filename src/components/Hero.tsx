@@ -1,14 +1,40 @@
+import { useState, useEffect } from 'react';
 import Reveal from './Reveal';
 
+const backgroundImages = [
+    '/hero.png',
+    '/service_finance.png',
+    '/service_hr.png',
+    '/service_training.png',
+    '/service_coaching.png',
+    '/service_audit.png',
+    '/service_management.png'
+];
+
 export default function Hero() {
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentImageIndex((prevIndex) => (prevIndex + 1) % backgroundImages.length);
+        }, 5000); // Change image every 5 seconds
+
+        return () => clearInterval(interval);
+    }, []);
+
     return (
         <section className="relative w-full h-screen min-h-[800px] flex items-center bg-[#0f172a] text-white overflow-hidden">
             {/* Dynamic Background with Gradient Mesh */}
             <div className="absolute inset-0 z-0">
-                <div
-                    className="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-overlay"
-                    style={{ backgroundImage: "url('/hero.png')" }}
-                ></div>
+                {backgroundImages.map((img, index) => (
+                    <div
+                        key={img}
+                        className={`absolute inset-0 bg-cover bg-center mix-blend-overlay transition-opacity duration-1000 ease-in-out ${
+                            index === currentImageIndex ? 'opacity-30' : 'opacity-0'
+                        }`}
+                        style={{ backgroundImage: `url('${img}')` }}
+                    ></div>
+                ))}
                 {/* Refined gradient blobs */}
                 <div className="absolute top-[-10%] right-[-5%] w-[900px] h-[900px] bg-[#1044A9] rounded-full filter blur-[140px] opacity-15 animate-pulse-slow"></div>
                 <div className="absolute bottom-[-10%] left-[-5%] w-[700px] h-[700px] bg-[#2962ff] rounded-full filter blur-[120px] opacity-15"></div>

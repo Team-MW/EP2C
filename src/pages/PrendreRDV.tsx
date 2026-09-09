@@ -1,11 +1,49 @@
-
+import { useEffect, useRef, useState } from 'react';
 import Layout from '../Layout';
 import SEO from '../components/SEO';
 import Reveal from '../components/Reveal';
 import { Calendar, Clock, User, CheckCircle } from 'lucide-react';
 
 export default function PrendreRDV() {
+    const formContainerRef = useRef<HTMLDivElement>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
+    useEffect(() => {
+        // Ajouter le script Jotform uniquement s'il n'est pas déjà présent
+        if (formContainerRef.current && formContainerRef.current.children.length === 0) {
+            const script = document.createElement("script");
+            script.src = "https://form.jotform.com/jsform/262514688940365";
+            script.type = "text/javascript";
+            script.async = true;
+            formContainerRef.current.appendChild(script);
+
+            // Observer pour détecter quand Jotform injecte l'iframe dans le conteneur
+            const observer = new MutationObserver((mutations) => {
+                for (const mutation of mutations) {
+                    // Jotform ajoute plusieurs éléments, on vérifie si des noeuds ont été ajoutés
+                    if (mutation.addedNodes.length > 0) {
+                        // On attend un tout petit peu pour que l'iframe finisse son rendu
+                        setTimeout(() => setIsLoading(false), 500);
+                        observer.disconnect();
+                        break;
+                    }
+                }
+            });
+
+            observer.observe(formContainerRef.current, { childList: true });
+
+            // Sécurité : si Jotform met trop de temps ou échoue, on enlève le loader après 4 secondes
+            const timeoutId = setTimeout(() => {
+                setIsLoading(false);
+                observer.disconnect();
+            }, 4000);
+
+            return () => {
+                observer.disconnect();
+                clearTimeout(timeoutId);
+            };
+        }
+    }, []);
 
     return (
         <Layout>
@@ -33,32 +71,19 @@ export default function PrendreRDV() {
                 </div>
             </div>
 
-            {/* Success Notification */}
-
-
             {/* Form Section */}
             <section className="py-20 bg-gray-50">
                 <div className="container mx-auto px-4">
                     <div className="max-w-4xl mx-auto">
                         <Reveal>
-                            <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12">
-                                <div className="text-center mb-0">
+                            <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 min-h-[500px]">
+                                <div className="text-center mb-8">
                                     <h2 className="text-3xl font-bold text-gray-900 mb-4">Réservez votre consultation</h2>
                                     <p className="text-gray-600">Remplissez le formulaire ci-dessous et nous vous recontacterons dans les plus brefs délais</p>
                                 </div>
 
-                                <iframe
-                                    data-tally-src="https://tally.so/r/1A9jVQ?transparentBackground=1&hideTitle=1"
-                                    className="w-full -mt-8"
-                                    width="100%"
-                                    height="500"
-                                    frameBorder="0"
-                                    marginHeight={0}
-                                    marginWidth={0}
-                                    title="Contact form"
-                                    style={{ background: 'transparent' }}
-                                ></iframe>
-                                <script async src="https://tally.so/widgets/embed.js"></script>
+                                {/* Conteneur pour le formulaire Jotform */}
+                                <div ref={formContainerRef} className="w-full"></div>
                             </div>
                         </Reveal>
 

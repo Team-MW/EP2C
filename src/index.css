@@ -683,10 +683,11 @@ ul {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  z-index: 2;
 }
 
 .service-icon {
-  color: var(--color-accent);
+  color: #fff;
 }
 
 .service-info {
@@ -706,7 +707,7 @@ ul {
 .service-id {
   font-size: 3rem;
   font-weight: 700;
-  color: #1546A8;
+  color: #fff;
   opacity: 0.8;
   line-height: 1;
 }
