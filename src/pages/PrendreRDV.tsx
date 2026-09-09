@@ -76,14 +76,22 @@ export default function PrendreRDV() {
                 <div className="container mx-auto px-4">
                     <div className="max-w-4xl mx-auto">
                         <Reveal>
-                            <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 min-h-[500px]">
+                            <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 min-h-[600px] relative">
                                 <div className="text-center mb-8">
                                     <h2 className="text-3xl font-bold text-gray-900 mb-4">Réservez votre consultation</h2>
                                     <p className="text-gray-600">Remplissez le formulaire ci-dessous et nous vous recontacterons dans les plus brefs délais</p>
                                 </div>
 
+                                {/* Loading Indicator */}
+                                {isLoading && (
+                                    <div className="absolute inset-0 top-32 flex flex-col items-center justify-center bg-white z-10">
+                                        <div className="w-12 h-12 border-4 border-gray-100 border-t-[#2962ff] rounded-full animate-spin mb-4"></div>
+                                        <p className="text-gray-500 font-medium text-sm animate-pulse">Chargement du formulaire...</p>
+                                    </div>
+                                )}
+
                                 {/* Conteneur pour le formulaire Jotform */}
-                                <div ref={formContainerRef} className="w-full"></div>
+                                <div ref={formContainerRef} className="w-full relative z-0"></div>
                             </div>
                         </Reveal>
 

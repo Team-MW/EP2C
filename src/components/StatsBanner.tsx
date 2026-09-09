@@ -1,5 +1,4 @@
 import { Users, Award, Briefcase, Layers, PhoneCall } from 'lucide-react';
-import Reveal from './Reveal';
 import CountUp from './CountUp';
 
 const stats = [
