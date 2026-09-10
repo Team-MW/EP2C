@@ -19,6 +19,7 @@ interface Document {
     createdAt: string;
     status: string;
     userId: number;
+    isRead?: boolean;
 }
 
 interface User {
@@ -34,7 +35,7 @@ interface User {
     role: string;
 }
 
-const DocumentManager = ({ documents, onDelete }: { documents: Document[], onDelete: (id: number, name: string) => void }) => {
+const DocumentManager = ({ documents, onDelete, onRead }: { documents: Document[], onDelete: (id: number, name: string) => void, onRead: (id: number) => void }) => {
     const [view, setView] = useState<'folders' | 'files'>('folders');
     const [currentFolder, setCurrentFolder] = useState<string | null>(null);
 
@@ -136,6 +137,7 @@ const DocumentManager = ({ documents, onDelete }: { documents: Document[], onDel
                                             href={doc.url}
                                             target="_blank"
                                             rel="noopener noreferrer"
+                                            onClick={() => { if (!doc.isRead) onRead(doc.id); }}
                                             className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium text-xs border border-blue-200 hover:border-blue-300 bg-blue-50 px-3 py-1.5 rounded-md transition-all"
                                         >
                                             Voir <ExternalLink size={12} />
@@ -178,6 +180,7 @@ export default function AdminDashboard() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [pinCode, setPinCode] = useState('');
     const [error, setError] = useState('');
+    const [showNotifications, setShowNotifications] = useState(false);
 
     const handlePinSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -314,6 +317,24 @@ export default function AdminDashboard() {
         }
     };
 
+    const handleMarkAsRead = async (docId: number) => {
+        try {
+            await fetch(`/api/documents/${docId}/read`, { method: 'PUT' });
+            setUsers(prev => prev.map(u => ({
+                ...u,
+                documents: u.documents.map(d => d.id === docId ? { ...d, isRead: true } : d)
+            })));
+            if (selectedUser) {
+                setSelectedUser(prev => prev ? {
+                    ...prev,
+                    documents: prev.documents.map(d => d.id === docId ? { ...d, isRead: true } : d)
+                } : prev);
+            }
+        } catch (error) {
+            console.error("Erreur mark as read:", error);
+        }
+    };
+
     const filteredUsers = users.filter(u =>
         (u.firstName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
         (u.lastName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
@@ -321,6 +342,8 @@ export default function AdminDashboard() {
     );
 
     if (!isLoaded) return <div className="flex items-center justify-center h-screen">Chargement...</div>;
+
+    const unreadDocs = users.flatMap(u => u.documents.filter(d => !d.isRead).map(d => ({ ...d, user: u })));
 
     // PIN Protection Screen
     if (!isAuthenticated) {
@@ -440,11 +463,57 @@ export default function AdminDashboard() {
                             {selectedUser ? `Dossier : ${selectedUser.firstName} ${selectedUser.lastName}` : activeView === 'stats' ? 'Statistiques' : 'Gestion des Clients'}
                         </div>
                     </div>
-                    <div className="flex items-center gap-2 md:gap-4">
-                        <button type="button" className="relative p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors">
-                            <Bell size={20} />
-                            <span className="notification-badge"></span>
-                        </button>
+                    <div className="flex items-center gap-2 md:gap-4 relative">
+                        <div className="relative">
+                            <button 
+                                type="button" 
+                                onClick={() => setShowNotifications(!showNotifications)}
+                                className="relative p-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors"
+                            >
+                                <Bell size={20} />
+                                {unreadDocs.length > 0 && <span className="notification-badge">{unreadDocs.length}</span>}
+                            </button>
+
+                            {/* Dropdown Notifications */}
+                            {showNotifications && (
+                                <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-lg border border-gray-100 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2">
+                                    <div className="p-4 border-b border-gray-50 bg-gray-50/50 flex justify-between items-center">
+                                        <h3 className="font-bold text-gray-900">Notifications</h3>
+                                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{unreadDocs.length}</span>
+                                    </div>
+                                    <div className="max-h-80 overflow-y-auto">
+                                        {unreadDocs.length === 0 ? (
+                                            <div className="p-6 text-center text-gray-500 text-sm">
+                                                <Bell size={24} className="mx-auto mb-2 text-gray-300" />
+                                                Aucune nouvelle notification
+                                            </div>
+                                        ) : unreadDocs.map(doc => (
+                                            <div 
+                                                key={doc.id} 
+                                                className="p-4 border-b border-gray-50 hover:bg-blue-50/50 cursor-pointer transition-colors" 
+                                                onClick={() => { 
+                                                    handleMarkAsRead(doc.id); 
+                                                    setSelectedUser(doc.user); 
+                                                    setShowNotifications(false); 
+                                                }}
+                                            >
+                                                <div className="flex items-start gap-3">
+                                                    <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 mt-0.5">
+                                                        <FileText size={14} />
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-sm font-semibold text-gray-900">{doc.user.firstName} {doc.user.lastName}</div>
+                                                        <div className="text-xs text-gray-600 mt-0.5">Nouveau document déposé :</div>
+                                                        <div className="text-xs font-medium text-blue-600 truncate mt-0.5">{doc.name}</div>
+                                                        <div className="text-[10px] text-gray-400 mt-1">{new Date(doc.createdAt).toLocaleDateString()}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                         <div className="avatar-modern">
                             AD
                         </div>
@@ -524,6 +593,7 @@ export default function AdminDashboard() {
                                 <DocumentManager
                                     documents={selectedUser.documents || []}
                                     onDelete={(id, name) => handleDeleteDocument(id, name)}
+                                    onRead={handleMarkAsRead}
                                 />
                             </div>
                         </div>
@@ -760,12 +830,7 @@ export default function AdminDashboard() {
                                                     </td>
                                                     <td className="px-3 md:px-6 py-4 hidden sm:table-cell">
                                                         {(() => {
-                                                            const recentDocs = u.documents?.filter(d => {
-                                                                const docDate = new Date(d.createdAt);
-                                                                const now = new Date();
-                                                                const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-                                                                return docDate > sevenDaysAgo;
-                                                            }).length || 0;
+                                                            const recentDocs = u.documents?.filter(d => !d.isRead).length || 0;
 
                                                             if (recentDocs > 0) {
                                                                 return (

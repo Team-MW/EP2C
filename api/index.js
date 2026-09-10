@@ -223,7 +223,8 @@ app.post('/api/documents', upload.single('file'), async (req, res) => {
             status: 'En attente',
             createdAt: new Date().toISOString(),
             userId: parseInt(userId),
-            folderId: parsedFolderId
+            folderId: parsedFolderId,
+            isRead: false
         };
         db.documents.push(doc);
         await writeDb(db);
@@ -323,16 +324,30 @@ app.put('/api/folders/:id/move', async (req, res) => {
 
 // 10. RENAME A DOCUMENT
 app.put('/api/documents/:id/rename', async (req, res) => {
-    const { id } = req.params;
     const { name } = req.body;
     try {
         const db = await readDb();
-        const document = db.documents.find(d => d.id === parseInt(id));
-        if (document) document.name = name;
+        const doc = db.documents.find(d => d.id === parseInt(req.params.id));
+        if (!doc) return res.status(404).json({ error: 'Doc non trouvé' });
+        doc.name = name;
         await writeDb(db);
-        res.json(document);
-    } catch (error) {
-        res.status(500).json({ error: 'Erreur renommage document' });
+        res.json(doc);
+    } catch (e) {
+        res.status(500).json({ error: 'Erreur serveur' });
+    }
+});
+
+// 10b. MARK DOCUMENT AS READ
+app.put('/api/documents/:id/read', async (req, res) => {
+    try {
+        const db = await readDb();
+        const doc = db.documents.find(d => d.id === parseInt(req.params.id));
+        if (!doc) return res.status(404).json({ error: 'Doc non trouvé' });
+        doc.isRead = true;
+        await writeDb(db);
+        res.json({ success: true, doc });
+    } catch (e) {
+        res.status(500).json({ error: 'Erreur serveur' });
     }
 });
 
