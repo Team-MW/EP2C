@@ -27,6 +27,14 @@ const upload = multer({ storage: multer.memoryStorage() });
 app.use(cors());
 app.use(express.json());
 
+// Setup static uploads directory for PDFs
+import fsSync from 'fs';
+const UPLOADS_DIR = path.join(__dirname, 'uploads');
+if (!fsSync.existsSync(UPLOADS_DIR)) {
+    fsSync.mkdirSync(UPLOADS_DIR);
+}
+app.use('/api/uploads', express.static(UPLOADS_DIR));
+
 // --- DB HELPERS ---
 async function readDb() {
     try {
@@ -189,25 +197,43 @@ app.post('/api/documents', upload.single('file'), async (req, res) => {
 
         if (!file) return res.status(400).json({ error: "Aucun fichier fourni" });
 
-        const uploadFromBuffer = (buffer) => {
-            return new Promise((resolve, reject) => {
-                let cld_upload_stream = cloudinary.uploader.upload_stream(
-                    {
-                        folder: "ep2c_documents",
-                        resource_type: "auto",
-                        access_mode: "public",
-                        type: "upload"
-                    },
-                    (error, result) => {
-                        if (result) resolve(result);
-                        else reject(error);
-                    }
-                );
-                streamifier.createReadStream(buffer).pipe(cld_upload_stream);
-            });
-        };
+        let secure_url;
+        let size;
+        let format;
 
-        const result = await uploadFromBuffer(file.buffer);
+        if (file.mimetype === 'application/pdf') {
+            // Save PDF locally
+            const fileName = `${Date.now()}_${file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+            const filePath = path.join(UPLOADS_DIR, fileName);
+            await fs.writeFile(filePath, file.buffer);
+            secure_url = `/api/uploads/${fileName}`;
+            size = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+            format = 'pdf';
+        } else {
+            // Use Cloudinary for other files
+            const uploadFromBuffer = (buffer) => {
+                return new Promise((resolve, reject) => {
+                    let cld_upload_stream = cloudinary.uploader.upload_stream(
+                        {
+                            folder: "ep2c_documents",
+                            resource_type: "auto",
+                            access_mode: "public",
+                            type: "upload"
+                        },
+                        (error, result) => {
+                            if (result) resolve(result);
+                            else reject(error);
+                        }
+                    );
+                    streamifier.createReadStream(buffer).pipe(cld_upload_stream);
+                });
+            };
+
+            const result = await uploadFromBuffer(file.buffer);
+            secure_url = result.secure_url;
+            size = (result.bytes / 1024 / 1024).toFixed(2) + ' MB';
+            format = result.format || 'unknown';
+        }
 
         const category = req.body.category || 'Autre';
         const displayName = `[${category}] ${file.originalname}`;
@@ -217,9 +243,9 @@ app.post('/api/documents', upload.single('file'), async (req, res) => {
         const doc = {
             id: generateId(),
             name: displayName,
-            type: result.format || 'unknown',
-            size: (result.bytes / 1024 / 1024).toFixed(2) + ' MB',
-            url: result.secure_url,
+            type: format,
+            size: size,
+            url: secure_url,
             status: 'En attente',
             createdAt: new Date().toISOString(),
             userId: parseInt(userId),
