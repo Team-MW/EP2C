@@ -1,0 +1,14 @@
+{
+  "name": "Efficience EP2C",
+  "short_name": "EP2C",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png"
+    }
+  ],
+  "theme_color": "#1044A9",
+  "background_color": "#ffffff",
+  "display": "standalone"
+}
