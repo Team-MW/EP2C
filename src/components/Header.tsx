@@ -13,7 +13,7 @@ export default function Header() {
                             <Phone size={20} />
                         </div>
                         <div className="contact-text">
-                            <span className="contact-main">+33 6 59 24 73 70</span>
+                            <a href="tel:+33659247370" className="contact-main no-underline hover:text-blue-600 transition-colors cursor-pointer">+33 6 59 24 73 70</a>
                             <span className="contact-sub">Lundi au Vendredi</span>
                         </div>
                     </div>
@@ -26,7 +26,7 @@ export default function Header() {
                         </div>
                         <div className="contact-text">
                             <span className="contact-main">Email :</span>
-                            <span className="contact-sub">contact@efficience-ep2c.com</span>
+                            <a href="mailto:contact@efficience-ep2c.com" className="contact-sub no-underline hover:text-blue-600 transition-colors cursor-pointer">contact@efficience-ep2c.com</a>
                         </div>
                     </div>
                 </div>
@@ -62,10 +62,10 @@ export default function Header() {
                         <div className="icon-circle">
                             <MapPin size={20} />
                         </div>
-                        <div className="contact-text" style={{ textAlign: 'right', alignItems: 'flex-end' }}>
+                        <a href="https://maps.google.com/?q=Parc+Eureka+le+Genesis+97+rue+de+Freyr,+34000+Montpellier" target="_blank" rel="noopener noreferrer" className="contact-text no-underline hover:text-blue-600 transition-colors cursor-pointer" style={{ textAlign: 'right', alignItems: 'flex-end', display: 'flex', flexDirection: 'column' }}>
                             <span className="contact-main">Parc Eureka</span>
                             <span className="contact-sub">le Genesis 97 rue de Freyr, 34000 Montpellier</span>
-                        </div>
+                        </a>
                     </div>
                 </div>
 

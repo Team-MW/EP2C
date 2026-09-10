@@ -1,4 +1,4 @@
-import { FileText, Download, Trash2, ExternalLink, Search, Folder, FolderPlus, ChevronRight, CornerLeftUp, PenLine } from 'lucide-react';
+import { FileText, Trash2, ExternalLink, Search, Folder, FolderPlus, ChevronRight, CornerLeftUp, PenLine } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { useUser } from '@clerk/clerk-react';
 

@@ -56,11 +56,11 @@ export default function Footer() {
                     <ul className="space-y-3 text-sm">
                         <li className="flex flex-col md:flex-row items-center md:items-start gap-3">
                             <MapPin size={18} className="text-[#1044A9] shrink-0 mt-0.5" />
-                            <span>
+                            <a href="https://maps.google.com/?q=Parc+Eureka+le+Genesis+97+rue+de+Freyr,+34000+Montpellier" target="_blank" rel="noopener noreferrer" className="hover:text-[#1044A9] transition-colors">
                                 PARC EUREKA<br />
                                 LE GENESIS 97 RUE DE FREYR<br />
                                 34000 MONTPELLIER
-                            </span>
+                            </a>
                         </li>
                         <li className="flex flex-col md:flex-row items-center md:items-center gap-3">
                             <Phone size={18} className="text-[#1044A9] shrink-0" />
@@ -68,7 +68,7 @@ export default function Footer() {
                         </li>
                         <li className="flex flex-col md:flex-row items-center md:items-center gap-3">
                             <Mail size={18} className="text-[#1044A9] shrink-0" />
-                            <span>contact@efficience-ep2c.com</span>
+                            <a href="mailto:contact@efficience-ep2c.com" className="hover:text-[#1044A9] transition-colors">contact@efficience-ep2c.com</a>
                         </li>
                         <li className="flex flex-col md:flex-row items-center md:items-start gap-3 pt-2 opacity-80 bg-white/5 p-2 rounded-lg w-full md:w-auto">
                             <Clock size={18} className="text-[#1044A9] shrink-0 mt-0.5" />
