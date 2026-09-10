@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, FileText, LogOut, Menu, X } from 'lucide-react';
-import { useUser, useClerk, SignedIn, SignedOut, RedirectToSignIn } from '@clerk/clerk-react';
+import { LayoutDashboard, FileText, Menu, X } from 'lucide-react';
+import { useUser, SignedIn, SignedOut, RedirectToSignIn, UserButton } from '@clerk/clerk-react';
 
 interface DashboardLayoutProps {
     children: ReactNode;
@@ -10,7 +10,6 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
     const { user } = useUser();
-    const { signOut } = useClerk();
     const location = useLocation();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -70,27 +69,16 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                         </nav>
 
                         <div className="p-6 border-t border-gray-100">
-                            <div className="flex items-center gap-3 mb-6 px-2">
-                                <div className="w-10 h-10 rounded-full bg-[#1044A9] text-white flex items-center justify-center font-bold text-lg">
-                                    {user?.firstName?.charAt(0) || user?.emailAddresses[0]?.emailAddress?.charAt(0) || 'C'}
-                                </div>
-                                <div className="flex flex-col overflow-hidden">
-                                    <span className="font-bold text-sm text-gray-900 truncate">
-                                        {user?.firstName ? `${user.firstName} ${user.lastName || ''}` : 'Client'}
-                                    </span>
-                                    <span className="text-xs text-gray-500 truncate">
-                                        {user?.emailAddresses[0]?.emailAddress}
-                                    </span>
-                                </div>
+                            <div className="flex items-center gap-3 px-2">
+                                <UserButton
+                                    appearance={{
+                                        elements: {
+                                            avatarBox: 'w-10 h-10',
+                                        }
+                                    }}
+                                    showName
+                                />
                             </div>
-
-                            <button
-                                onClick={() => signOut()}
-                                className="flex items-center gap-3 px-4 py-3 w-full text-red-600 hover:bg-red-50 rounded-xl transition-colors font-medium"
-                            >
-                                <LogOut size={20} />
-                                <span>Déconnexion</span>
-                            </button>
                         </div>
                     </aside>
 

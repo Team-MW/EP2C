@@ -2883,3 +2883,71 @@ header {
     font-size: 0.8rem;
   }
 }
+
+/* --- OS Style Explorer (Context Menu & DND) --- */
+
+.context-menu {
+  position: fixed;
+  z-index: 1000;
+  min-width: 180px;
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  padding: 6px;
+  font-size: 0.875rem;
+  animation: fadeInMenu 0.15s ease-out;
+}
+
+@keyframes fadeInMenu {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.context-menu-item {
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #333;
+  transition: background-color 0.1s;
+}
+
+.context-menu-item:hover {
+  background-color: var(--color-accent);
+  color: white;
+}
+
+.context-menu-item.danger {
+  color: #ef4444;
+}
+
+.context-menu-item.danger:hover {
+  background-color: #ef4444;
+  color: white;
+}
+
+.context-menu-divider {
+  height: 1px;
+  background-color: rgba(0, 0, 0, 0.05);
+  margin: 4px 0;
+}
+
+.item-selected {
+  background-color: rgba(41, 98, 255, 0.1) !important;
+  border-color: var(--color-accent) !important;
+}
+
+.drag-over {
+  background-color: rgba(41, 98, 255, 0.15) !important;
+  border-color: var(--color-accent) !important;
+  transform: scale(1.02);
+  transition: all 0.2s ease;
+}
+
+.item-dragging {
+  opacity: 0.5;
+}

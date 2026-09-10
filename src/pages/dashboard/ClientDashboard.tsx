@@ -1,6 +1,6 @@
 import DashboardLayout from '../../layouts/DashboardLayout';
 import { useUser } from '@clerk/clerk-react';
-import { FileCheck, FileText, Upload, Folder } from 'lucide-react';
+import { FileCheck, FileText, Upload, Folder, FolderPlus, X, Check } from 'lucide-react';
 import React, { useState, useEffect, useRef } from 'react';
 import emailjs from '@emailjs/browser';
 import '../admin/modern-dashboard.css';
@@ -22,9 +22,53 @@ export default function ClientDashboard() {
     const [documents, setDocuments] = useState<DbDocument[]>([]);
 
 
-    // 1. Sync User with DB on Load AND Fetch Documents
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [isUploading, setIsUploading] = useState(false);
+    const [showSuccessNotification, setShowSuccessNotification] = useState(false);
+    const [uploadError, setUploadError] = useState<string | null>(null);
+    const [uploadedFileName, setUploadedFileName] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState<string>('Autre');
+    
+    // Folders
+    const [folders, setFolders] = useState<any[]>([]);
+    const [selectedFolderId, setSelectedFolderId] = useState<string>('');
+
+    // Inline folder creation
+    const [showInlineNewFolder, setShowInlineNewFolder] = useState(false);
+    const [inlineFolderName, setInlineFolderName] = useState('');
+    const [isCreatingFolder, setIsCreatingFolder] = useState(false);
+
+    const handleCreateFolderInline = async () => {
+        if (!inlineFolderName.trim() || !dbUser) return;
+        setIsCreatingFolder(true);
+        try {
+            const res = await fetch('/api/folders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: inlineFolderName.trim(),
+                    userId: dbUser.id,
+                    parentId: null
+                })
+            });
+            if (res.ok) {
+                const newFolder = await res.json();
+                setFolders(prev => [newFolder, ...prev]);
+                setSelectedFolderId(String(newFolder.id));
+                setInlineFolderName('');
+                setShowInlineNewFolder(false);
+            }
+        } catch (err) {
+            console.error('Erreur création dossier:', err);
+        } finally {
+            setIsCreatingFolder(false);
+        }
+    };
+
+    // 1. Sync User with DB on Load AND Fetch Documents & Folders
     useEffect(() => {
-        // Initialize EmailJS
         console.log('🔧 Initializing EmailJS with public key: 2ak1IYD1zxlcPWDx_');
         emailjs.init('2ak1IYD1zxlcPWDx_');
         console.log('✅ EmailJS initialized successfully');
@@ -48,12 +92,15 @@ export default function ClientDashboard() {
                 const userData = await res.json();
                 setDbUser(userData);
 
-                // Fetch Documents
-                const docsRes = await fetch(`/api/users/${user.id}/documents`);
-                if (docsRes.ok) {
-                    const docs = await docsRes.json();
-                    setDocuments(docs);
-                }
+                // Fetch Documents & Folders
+                const [docsRes, foldersRes] = await Promise.all([
+                    fetch(`/api/users/${user.id}/documents`),
+                    fetch(`/api/users/${user.id}/folders`)
+                ]);
+                
+                if (docsRes.ok) setDocuments(await docsRes.json());
+                if (foldersRes.ok) setFolders(await foldersRes.json());
+                
             } catch (err) {
                 console.error("Error syncing user:", err);
             }
@@ -61,14 +108,6 @@ export default function ClientDashboard() {
 
         syncUser();
     }, [user]);
-
-    const fileInputRef = useRef<HTMLInputElement>(null);
-
-    const [uploadProgress, setUploadProgress] = useState(0);
-    const [isUploading, setIsUploading] = useState(false);
-    const [showSuccessNotification, setShowSuccessNotification] = useState(false);
-    const [uploadedFileName, setUploadedFileName] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState<string>('Autre');
 
     const triggerFileInput = () => {
         fileInputRef.current?.click();
@@ -82,6 +121,9 @@ export default function ClientDashboard() {
         formData.append('file', file);
         formData.append('userId', dbUser.id.toString());
         formData.append('category', selectedCategory);
+        if (selectedFolderId) {
+            formData.append('folderId', selectedFolderId);
+        }
 
         setIsUploading(true);
         setUploadProgress(0);
@@ -116,10 +158,6 @@ export default function ClientDashboard() {
 
                 // Send email notification from frontend
                 console.log('📧 Starting email notification...');
-                console.log('Service ID:', 'service_rl9r1md');
-                console.log('Template ID:', 'template_lqm9nad');
-                console.log('EmailJS initialized:', typeof emailjs !== 'undefined');
-
                 try {
                     const emailParams = {
                         user_name: dbUser ? `${dbUser.firstName} ${dbUser.lastName}` : 'Client',
@@ -130,49 +168,31 @@ export default function ClientDashboard() {
                         }),
                         doc_name: file.name,
                         doc_link: newDoc.url,
-                        message: `Nouveau document déposé par ${dbUser?.company || 'un client'} - Société: ${dbUser?.company || 'Non renseignée'}`
+                        message: `Nouveau document déposé par ${dbUser?.company || 'un client'}`
                     };
 
-                    console.log('📨 Email parameters:', emailParams);
-                    console.log('🚀 Calling emailjs.send...');
-
-                    const result = await emailjs.send(
-                        'service_rl9r1md',
-                        'template_lqm9nad',
-                        emailParams
-                    );
-
-                    console.log('✅ Email notification sent successfully!');
-                    console.log('📬 EmailJS Response:', result);
+                    await emailjs.send('service_rl9r1md', 'template_lqm9nad', emailParams);
                 } catch (emailError: any) {
-                    console.error('❌ Email notification FAILED!');
-                    console.error('Error type:', typeof emailError);
-                    console.error('Error object:', emailError);
-                    console.error('Error message:', emailError?.message);
-                    console.error('Error text:', emailError?.text);
-                    console.error('Error status:', emailError?.status);
-                    console.error('Full error:', JSON.stringify(emailError, null, 2));
-                    // Don't block the success flow if email fails
+                    console.error('❌ Email notification FAILED!', emailError);
                 }
 
                 // Show success notification
                 setTimeout(() => {
                     setIsUploading(false);
                     setShowSuccessNotification(true);
-
-                    // Hide notification after 4 seconds
-                    setTimeout(() => {
-                        setShowSuccessNotification(false);
-                    }, 4000);
+                    setTimeout(() => setShowSuccessNotification(false), 4000);
                 }, 500);
             } else {
-                throw new Error('Upload failed');
+                const errorData = await res.json().catch(() => null);
+                throw new Error(errorData?.error || 'Upload failed');
             }
-        } catch (err) {
+        } catch (err: any) {
             console.error("Upload error:", err);
             setIsUploading(false);
             setUploadProgress(0);
-            alert("Erreur lors de l'envoi du fichier.");
+            
+            // On affiche une belle erreur UI au lieu d'un simple alert
+            setUploadError(`Erreur lors de l'envoi du fichier. Vérifiez que le serveur backend est démarré. Détail: ${err.message}`);
         }
 
         // Reset input
@@ -201,6 +221,24 @@ export default function ClientDashboard() {
                             ></div>
                         </div>
                         <p className="text-center text-sm text-gray-600 mt-3 font-semibold">{uploadProgress}%</p>
+                    </div>
+                </div>
+            )}
+
+            {/* Error Notification */}
+            {uploadError && (
+                <div className="fixed top-8 right-8 z-50 animate-in slide-in-from-top duration-500">
+                    <div className="bg-gradient-to-r from-red-500 to-rose-600 text-white px-6 py-4 rounded-xl shadow-2xl flex items-start gap-4 max-w-[400px]">
+                        <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                            <span className="text-xl font-bold">!</span>
+                        </div>
+                        <div className="flex-1">
+                            <h4 className="font-bold text-lg mb-1">Échec de l'envoi</h4>
+                            <p className="text-sm text-red-50">{uploadError}</p>
+                        </div>
+                        <button onClick={() => setUploadError(null)} className="text-white/60 hover:text-white transition-colors">
+                            <span className="text-2xl">&times;</span>
+                        </button>
                     </div>
                 </div>
             )}
@@ -272,23 +310,90 @@ export default function ClientDashboard() {
                 </p>
 
                 <div className="flex flex-col md:flex-row gap-4 mb-6 items-start">
+                    {/* Folder Selection */}
                     <div className="w-full md:w-auto md:min-w-[280px]">
                         <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                             <Folder size={16} className="text-blue-600" />
-                            Dossier / Catégorie
+                            Dossier de destination
+                        </label>
+                        <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center w-full">
+                            <select
+                                className="flex-1 bg-white border-2 border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 px-4 py-3 font-medium shadow-sm hover:border-blue-300 transition-all cursor-pointer"
+                                value={selectedFolderId}
+                                onChange={(e) => setSelectedFolderId(e.target.value)}
+                            >
+                                <option value="">📂 Racine principale</option>
+                                {folders.map(folder => (
+                                    <option key={folder.id} value={folder.id}>
+                                        📂 {folder.name}
+                                    </option>
+                                ))}
+                            </select>
+                            <button
+                                type="button"
+                                onClick={() => { setShowInlineNewFolder(!showInlineNewFolder); setInlineFolderName(''); }}
+                                title="Créer un nouveau dossier"
+                                className="flex-shrink-0 w-11 h-11 flex items-center justify-center bg-blue-50 text-blue-600 border-2 border-blue-200 rounded-xl hover:bg-blue-100 hover:border-blue-400 transition-all"
+                            >
+                                <FolderPlus size={18} />
+                            </button>
+                        </div>
+
+                        {/* Inline folder creation form */}
+                        {showInlineNewFolder && (
+                            <div className="mt-2 flex flex-col sm:flex-row gap-2 items-stretch sm:items-center animate-in slide-in-from-top-2 duration-200">
+                                <input
+                                    autoFocus
+                                    type="text"
+                                    placeholder="Nom du nouveau dossier..."
+                                    className="flex-1 bg-white border-2 border-blue-300 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 px-3 py-2 font-medium shadow-sm"
+                                    value={inlineFolderName}
+                                    onChange={(e) => setInlineFolderName(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') handleCreateFolderInline();
+                                        if (e.key === 'Escape') setShowInlineNewFolder(false);
+                                    }}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={handleCreateFolderInline}
+                                    disabled={!inlineFolderName.trim() || isCreatingFolder}
+                                    className="flex-shrink-0 sm:w-9 h-11 sm:h-9 flex items-center justify-center bg-green-500 text-white rounded-xl hover:bg-green-600 transition-all disabled:opacity-40"
+                                >
+                                    <Check size={16} />
+                                    <span className="sm:hidden ml-2 font-medium">Valider</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowInlineNewFolder(false)}
+                                    className="flex-shrink-0 sm:w-9 h-11 sm:h-9 flex items-center justify-center bg-gray-200 text-gray-600 rounded-xl hover:bg-gray-300 transition-all"
+                                >
+                                    <X size={16} />
+                                    <span className="sm:hidden ml-2 font-medium">Annuler</span>
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Category Selection */}
+                    <div className="w-full md:w-auto md:min-w-[280px]">
+                        <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                            <FileText size={16} className="text-blue-600" />
+                            Catégorie / Tag
                         </label>
                         <select
                             className="w-full bg-white border-2 border-gray-200 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 px-4 py-3 font-medium shadow-sm hover:border-blue-300 transition-all cursor-pointer"
                             value={selectedCategory}
                             onChange={(e) => setSelectedCategory(e.target.value)}
                         >
-                            <option value="Autre">📁 Autre (Défaut)</option>
+                            <option value="Autre">🏷️ Autre (Défaut)</option>
                             <option value="Fiche de paye">💰 Fiche de paye</option>
                             <option value="Bilan">📊 Bilan Comptable</option>
                             <option value="Juridique">⚖️ Juridique / K-Bis</option>
                             <option value="Urssaf">🏛️ URSSAF / Charges</option>
                             <option value="Impôts">💼 Impôts / Fiscal</option>
                             <option value="Banque">🏦 Relevés Bancaires</option>
+                            <option value="Social">🤝 Social / RH</option>
                         </select>
                     </div>
                 </div>
@@ -298,7 +403,7 @@ export default function ClientDashboard() {
                     ref={fileInputRef}
                     onChange={handleFileUpload}
                     className="hidden"
-                    accept=".pdf,.jpg,.jpeg,.png"
+                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx"
                 />
 
                 <div

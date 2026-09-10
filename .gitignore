@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 .env
+.env.local
+
+# Base de données locale (données clients - NE PAS commiter)
+api/db.json
 
 # Editor directories and files
 .vscode/*
