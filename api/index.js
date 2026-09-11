@@ -98,9 +98,9 @@ app.post('/api/users', async (req, res) => {
         
         console.log("=== USER SYNC SUCCESS ===", user.id);
         res.json(user);
-    } catch (error) {
+    } catch (error: any) {
         console.error("=== ERROR IN POST /api/users ===", error);
-        res.status(500).json({ error: 'Erreur création user' });
+        res.status(500).json({ error: 'Erreur: ' + (error.message || 'unknown error') });
     }
 });
 

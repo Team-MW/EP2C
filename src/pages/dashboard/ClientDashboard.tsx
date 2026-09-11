@@ -90,6 +90,13 @@ export default function ClientDashboard() {
                         role: 'client'
                     })
                 });
+                
+                if (!res.ok) {
+                    const errorText = await res.text();
+                    console.error("Server Error Response:", errorText);
+                    throw new Error(`Serveur a répondu ${res.status}: ${errorText.substring(0, 100)}`);
+                }
+
                 const userData = await res.json();
                 setDbUser(userData);
 
@@ -102,9 +109,9 @@ export default function ClientDashboard() {
                 if (docsRes.ok) setDocuments(await docsRes.json());
                 if (foldersRes.ok) setFolders(await foldersRes.json());
                 
-            } catch (err) {
+            } catch (err: any) {
                 console.error("Error syncing user:", err);
-                setUploadError("Erreur de connexion au serveur backend. Veuillez vérifier que le serveur est bien démarré.");
+                setUploadError("Erreur de connexion au serveur: " + err.message);
             }
         };
 
