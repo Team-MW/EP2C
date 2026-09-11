@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Flag, Eye, Lightbulb, Play } from 'lucide-react';
+import { Eye, Lightbulb, Play } from 'lucide-react';
 import Reveal from './Reveal';
 
 const tabs = [

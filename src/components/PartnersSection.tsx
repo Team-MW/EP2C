@@ -1,4 +1,4 @@
-import React from 'react';
+
 
 const row1 = [
   'SKF-2408-600x400.jpg',
