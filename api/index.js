@@ -59,6 +59,8 @@ app.get('/api/users', async (req, res) => {
 
 // 2. CREATE / SYNC USER
 app.post('/api/users', async (req, res) => {
+    console.log("=== POST /api/users CALLED ===");
+    console.log("Req Body:", req.body);
     const { clerkId, email, firstName, lastName, role } = req.body;
     try {
         let user = await prisma.user.findUnique({
@@ -94,9 +96,10 @@ app.post('/api/users', async (req, res) => {
             });
         }
         
+        console.log("=== USER SYNC SUCCESS ===", user.id);
         res.json(user);
     } catch (error) {
-        console.error(error);
+        console.error("=== ERROR IN POST /api/users ===", error);
         res.status(500).json({ error: 'Erreur création user' });
     }
 });
