@@ -7,6 +7,7 @@
     "dev": "concurrently \"npm run server\" \"vite\"",
     "server": "node api/index.js",
     "build": "npx prisma generate && tsc -b && vite build",
+    "postinstall": "prisma generate",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -25,11 +26,11 @@
     "react-dom": "^19.2.0",
     "react-helmet-async": "^2.0.5",
     "react-router-dom": "^7.13.0",
-    "streamifier": "^0.1.1"
+    "streamifier": "^0.1.1",
+    "@prisma/client": "^5.22.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
-    "@prisma/client": "^5.22.0",
     "@tailwindcss/postcss": "^4.1.18",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.5",
