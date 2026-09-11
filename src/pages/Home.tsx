@@ -24,7 +24,6 @@ export default function Home() {
             <AboutSection />
             <PartnersSection />
             <ServicesSection />
-            <VisionSection />
             <TestimonialsSection />
             <ProcessSection />
             <CalendlySection />

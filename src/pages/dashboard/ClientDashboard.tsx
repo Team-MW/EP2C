@@ -30,6 +30,7 @@ export default function ClientDashboard() {
     const [uploadError, setUploadError] = useState<string | null>(null);
     const [uploadedFileName, setUploadedFileName] = useState('');
     const [selectedCategory, setSelectedCategory] = useState<string>('Autre');
+    const [isDragging, setIsDragging] = useState(false);
     
     // Folders
     const [folders, setFolders] = useState<any[]>([]);
@@ -103,6 +104,7 @@ export default function ClientDashboard() {
                 
             } catch (err) {
                 console.error("Error syncing user:", err);
+                setUploadError("Erreur de connexion au serveur backend. Veuillez vérifier que le serveur est bien démarré.");
             }
         };
 
@@ -113,10 +115,12 @@ export default function ClientDashboard() {
         fileInputRef.current?.click();
     };
 
-    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (!dbUser || !e.target.files || e.target.files.length === 0) return;
-
-        const file = e.target.files[0];
+    const processFile = async (file: File) => {
+        if (!dbUser) {
+            setUploadError("Utilisateur non synchronisé avec le serveur. La connexion à la base de données a échoué. Veuillez recharger la page ou redémarrer le serveur.");
+            return;
+        }
+        
         const formData = new FormData();
         formData.append('file', file);
         formData.append('userId', dbUser.id.toString());
@@ -197,6 +201,37 @@ export default function ClientDashboard() {
 
         // Reset input
         if (fileInputRef.current) fileInputRef.current.value = '';
+    };
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files || e.target.files.length === 0) return;
+        try {
+            await processFile(e.target.files[0]);
+        } catch (err: any) {
+            setUploadError(err.message || "Erreur inattendue");
+        }
+    };
+
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(false);
+    };
+
+    const handleDrop = async (e: React.DragEvent) => {
+        e.preventDefault();
+        setIsDragging(false);
+        if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            try {
+                await processFile(e.dataTransfer.files[0]);
+            } catch (err: any) {
+                setUploadError(err.message || "Erreur inattendue");
+            }
+        }
     };
 
     return (
@@ -407,8 +442,11 @@ export default function ClientDashboard() {
                 />
 
                 <div
-                    className="upload-zone-modern border-3 border-dashed rounded-xl p-10 transition-all cursor-pointer"
+                    className={`upload-zone-modern border-3 border-dashed rounded-xl p-10 transition-all cursor-pointer ${isDragging ? 'border-[#1044A9] bg-blue-50/50 scale-[1.02]' : ''}`}
                     onClick={triggerFileInput}
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
                 >
                     <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm text-[#1044A9]">
                         <Upload size={32} />

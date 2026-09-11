@@ -4,12 +4,6 @@ import Reveal from './Reveal';
 
 const tabs = [
     {
-        id: 'mission',
-        title: 'Notre Mission',
-        icon: Flag,
-        content: "Nous nous engageons à fournir des solutions sur-mesure à fort impact pour votre développement structurel et stratégique. Plus de 20 ans d'expérience à bâtir des relations de confiance."
-    },
-    {
         id: 'vision',
         title: 'Notre Vision',
         icon: Eye,
@@ -30,7 +24,7 @@ const skills = [
 ];
 
 export default function VisionSection() {
-    const [activeTab, setActiveTab] = useState('mission');
+    const [activeTab, setActiveTab] = useState('vision');
 
     return (
         <section className="py-24 bg-white relative overflow-hidden">

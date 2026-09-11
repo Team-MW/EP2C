@@ -14,7 +14,6 @@ const row2 = [
   'KWS_SAAT_AG_logo.jpg',
   'fortify.jpg',
   'FINEA_RVB_400x145.jpg',
-  'boumedienne.jpeg',
   '1630518882844.jpg',
   '1755682670-61281.png',
   '5f9071e51400007e7263df02.png'

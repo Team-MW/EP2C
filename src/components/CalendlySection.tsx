@@ -1,7 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Reveal from './Reveal';
 
 export default function CalendlySection() {
+    const [isLoading, setIsLoading] = useState(true);
+
     useEffect(() => {
         const scriptId = 'calendly-script-home';
         if (!document.getElementById(scriptId)) {
@@ -10,7 +12,16 @@ export default function CalendlySection() {
             script.src = "https://assets.calendly.com/assets/external/widget.js";
             script.type = "text/javascript";
             script.async = true;
+            script.onload = () => setIsLoading(false);
             document.body.appendChild(script);
+
+            const timeoutId = setTimeout(() => {
+                setIsLoading(false);
+            }, 3000);
+
+            return () => clearTimeout(timeoutId);
+        } else {
+            setIsLoading(false);
         }
     }, []);
 
@@ -32,10 +43,16 @@ export default function CalendlySection() {
                 </Reveal>
 
                 <Reveal delay="delay-100">
-                    <div className="bg-white rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] p-4 md:p-8 max-w-5xl mx-auto border border-gray-100">
+                    <div className="bg-white rounded-3xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] p-4 md:p-8 max-w-5xl mx-auto border border-gray-100 relative min-h-[500px]">
+                        {isLoading && (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center bg-white z-10 rounded-3xl">
+                                <div className="w-12 h-12 border-4 border-gray-100 border-t-[#2962ff] rounded-full animate-spin mb-4"></div>
+                                <p className="text-gray-500 font-medium text-sm animate-pulse">Chargement de l'agenda...</p>
+                            </div>
+                        )}
                         {/* Calendly inline widget begin */}
                         <div 
-                            className="calendly-inline-widget w-full" 
+                            className="calendly-inline-widget w-full relative z-0" 
                             data-url="https://calendly.com/ep2c/30min" 
                             style={{ minWidth: '320px', height: '700px' }}
                         ></div>
