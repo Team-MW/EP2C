@@ -1,4 +1,7 @@
 import AboutSection from '../components/AboutSection';
+import CalendlySection from '../components/CalendlySection';
+import FeatureBlocks from '../components/FeatureBlocks';
+import PartnersSection from '../components/PartnersSection';
 import Hero from '../components/Hero';
 import ProcessSection from '../components/ProcessSection';
 import ServicesSection from '../components/ServicesSection';
@@ -17,11 +20,14 @@ export default function Home() {
                 keywords="paie, RH, conseil, coaching, audit social, Montpellier, entreprise, gestion personnel"
             />
             <Hero />
-            <ServicesSection />
+            <FeatureBlocks />
             <AboutSection />
+            <PartnersSection />
+            <ServicesSection />
             <VisionSection />
             <TestimonialsSection />
             <ProcessSection />
+            <CalendlySection />
             <StatsBanner />
         </Layout>
     );

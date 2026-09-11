@@ -9,6 +9,30 @@ export default function PrendreRDV() {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
+        // Ajouter le script Calendly uniquement s'il n'est pas déjà présent
+        const scriptId = 'calendly-script';
+        if (!document.getElementById(scriptId)) {
+            const script = document.createElement("script");
+            script.id = scriptId;
+            script.src = "https://assets.calendly.com/assets/external/widget.js";
+            script.type = "text/javascript";
+            script.async = true;
+            
+            script.onload = () => setIsLoading(false);
+            document.body.appendChild(script);
+
+            // Sécurité : on enlève le loader après 3 secondes au cas où
+            const timeoutId = setTimeout(() => {
+                setIsLoading(false);
+            }, 3000);
+
+            return () => {
+                clearTimeout(timeoutId);
+            };
+        } else {
+            setIsLoading(false);
+        }
+
         // Ajouter le script Jotform uniquement s'il n'est pas déjà présent
         if (formContainerRef.current && formContainerRef.current.children.length === 0) {
             const script = document.createElement("script");
@@ -16,32 +40,6 @@ export default function PrendreRDV() {
             script.type = "text/javascript";
             script.async = true;
             formContainerRef.current.appendChild(script);
-
-            // Observer pour détecter quand Jotform injecte l'iframe dans le conteneur
-            const observer = new MutationObserver((mutations) => {
-                for (const mutation of mutations) {
-                    // Jotform ajoute plusieurs éléments, on vérifie si des noeuds ont été ajoutés
-                    if (mutation.addedNodes.length > 0) {
-                        // On attend un tout petit peu pour que l'iframe finisse son rendu
-                        setTimeout(() => setIsLoading(false), 500);
-                        observer.disconnect();
-                        break;
-                    }
-                }
-            });
-
-            observer.observe(formContainerRef.current, { childList: true });
-
-            // Sécurité : si Jotform met trop de temps ou échoue, on enlève le loader après 4 secondes
-            const timeoutId = setTimeout(() => {
-                setIsLoading(false);
-                observer.disconnect();
-            }, 4000);
-
-            return () => {
-                observer.disconnect();
-                clearTimeout(timeoutId);
-            };
         }
     }, []);
 
@@ -90,6 +88,19 @@ export default function PrendreRDV() {
                                     </div>
                                 )}
 
+                                {/* Conteneur pour le widget Calendly */}
+                                <div 
+                                    className="calendly-inline-widget w-full relative z-0" 
+                                    data-url="https://calendly.com/ep2c/30min" 
+                                    style={{ minWidth: '320px', height: '700px' }}
+                                ></div>
+
+                                {/* Séparateur et Conteneur pour Jotform */}
+                                <div className="mt-16 text-center mb-8 border-t border-gray-100 pt-16">
+                                    <h2 className="text-3xl font-bold text-gray-900 mb-4">Questionnaire de découverte</h2>
+                                    <p className="text-gray-600">Pour mieux comprendre votre besoin, vous pouvez remplir ce questionnaire</p>
+                                </div>
+                                
                                 {/* Conteneur pour le formulaire Jotform */}
                                 <div ref={formContainerRef} className="w-full relative z-0"></div>
                             </div>

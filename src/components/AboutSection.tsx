@@ -1,123 +1,124 @@
-import { Target, Rocket, Globe, MapPin, Sparkles } from 'lucide-react';
+import { Users, Target, Play } from 'lucide-react';
 import Reveal from './Reveal';
 
 export default function AboutSection() {
     return (
-        <section className="py-28 relative overflow-hidden bg-slate-50">
-            {/* Background Decorations */}
-            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-300/20 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/3"></div>
-            <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-indigo-300/20 rounded-full blur-[120px] translate-y-1/3 -translate-x-1/3"></div>
-
-            <div className="container relative z-10 grid lg:grid-cols-2 gap-20 items-center px-6">
-
-                {/* Left Column: Visual */}
-                <Reveal>
-                    <div className="relative group">
-                        {/* Animated Glow Behind */}
-                        <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-[2.5rem] opacity-20 blur-xl group-hover:opacity-40 transition-opacity duration-700"></div>
-                        
-                        <div className="relative bg-white/90 backdrop-blur-xl border border-white rounded-[2.5rem] p-10 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.05)] transition-transform duration-700 group-hover:-translate-y-2">
+        <section className="py-24 bg-white relative overflow-hidden">
+            <div className="container mx-auto px-6">
+                <div className="grid lg:grid-cols-2 gap-16 lg:gap-8 items-center">
+                    
+                    {/* Left Column: Image & Blobs */}
+                    <Reveal className="relative flex justify-center items-center">
+                        {/* Abstract Background Blobs */}
+                        <div className="relative w-full max-w-md aspect-square flex items-center justify-center group cursor-pointer">
                             
-                            {/* Decorative element */}
-                            <div className="absolute -top-5 -right-5 w-14 h-14 bg-gradient-to-br from-[#1044A9] to-indigo-500 rounded-full shadow-xl flex items-center justify-center animate-bounce">
-                                <Sparkles size={24} className="text-white" />
+                            {/* Main Blue Blob SVG */}
+                            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" className="absolute inset-0 w-full h-full text-blue-100 transform scale-110 -z-10 transition-transform duration-700 group-hover:rotate-6 group-hover:scale-125">
+                                <path fill="currentColor" d="M45.7,-76.4C58.9,-69.3,69,-56.3,77,-42.1C85,-27.9,90.9,-12.4,90.3,2.9C89.7,18.2,82.5,33.3,72.4,45.8C62.2,58.3,49.1,68.2,34.7,74.5C20.3,80.8,4.6,83.5,-10.8,80.7C-26.2,77.9,-41.3,69.5,-53.4,57.7C-65.5,45.9,-74.6,30.8,-79.3,14.3C-84,-2.2,-84.3,-20.1,-76.7,-35.1C-69.1,-50.1,-53.6,-62.1,-38.7,-68.8C-23.8,-75.5,-9.5,-76.9,6.1,-84.4C21.7,-91.9,32.5,-83.5,45.7,-76.4Z" transform="translate(100 100)" />
+                            </svg>
+
+                            {/* Decorative Outline Blob */}
+                            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" className="absolute inset-0 w-[110%] h-[110%] -left-[5%] -top-[5%] text-[#1044A9] opacity-20 -z-20 transform -rotate-12 transition-transform duration-1000 group-hover:-rotate-45 group-hover:scale-110">
+                                <path fill="none" stroke="currentColor" strokeWidth="2" d="M41.7,-67.2C54.4,-59.5,65.2,-48.5,73.5,-35.3C81.8,-22.1,87.6,-6.6,85.6,8.2C83.6,23,73.8,37.1,62.1,48.8C50.4,60.5,36.8,69.8,21.8,74.9C6.8,80,-9.6,80.9,-25.1,76.5C-40.6,72.1,-55.2,62.4,-65.4,49.3C-75.6,36.2,-81.4,19.7,-81.6,3.1C-81.8,-13.5,-76.4,-30.2,-66.1,-43.3C-55.8,-56.4,-40.6,-65.9,-26.3,-71.4C-12,-76.9,1.4,-78.4,15.1,-75.8C28.8,-73.2,29,-74.9,41.7,-67.2Z" transform="translate(100 100)" />
+                            </svg>
+
+                            {/* Floating decorative elements */}
+                            <div className="absolute top-[10%] left-[10%] w-6 h-6 bg-[#2962ff] rounded-full animate-bounce"></div>
+                            <div className="absolute bottom-[20%] right-[-5%] w-12 h-12 bg-[#1044A9] rounded-full drop-shadow-lg" style={{ borderRadius: '40% 60% 70% 30% / 40% 50% 60% 50%' }}></div>
+                            <div className="absolute top-[40%] right-[5%] text-[#1044A9]">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2v20M2 12h20"/></svg>
+                            </div>
+                            
+                            {/* Grey Sphere */}
+                            <div className="absolute bottom-[10%] left-[-10%] w-16 h-16 rounded-full bg-gradient-to-br from-gray-300 to-gray-500 shadow-xl border border-white/50"></div>
+
+                            {/* Scattered particles on hover */}
+                            <div className="absolute top-[20%] left-[20%] w-3 h-3 bg-blue-500 rounded-full opacity-0 group-hover:opacity-100 group-hover:-translate-x-12 group-hover:-translate-y-12 transition-all duration-700 ease-out delay-100"></div>
+                            <div className="absolute bottom-[20%] left-[30%] w-4 h-4 bg-indigo-500 rounded-full opacity-0 group-hover:opacity-100 group-hover:-translate-x-16 group-hover:translate-y-8 transition-all duration-700 ease-out delay-200"></div>
+                            <div className="absolute top-[30%] right-[20%] w-2 h-2 bg-blue-400 rounded-full opacity-0 group-hover:opacity-100 group-hover:translate-x-16 group-hover:-translate-y-10 transition-all duration-700 ease-out delay-300"></div>
+
+                            {/* Glowing Rotating Ring */}
+                            <div className="absolute inset-4 rounded-full bg-gradient-to-tr from-[#2962ff] via-indigo-400 to-[#1044A9] opacity-0 group-hover:opacity-100 animate-spin-slow blur-xl transition-opacity duration-700 -z-10"></div>
+                            <div className="absolute inset-4 rounded-full border-[6px] border-dashed border-blue-200/50 opacity-0 group-hover:opacity-100 animate-[spin_10s_linear_reverse_infinite] transition-opacity duration-700 -z-10 scale-110"></div>
+
+                            {/* User Image Container */}
+                            <div className="relative w-[85%] h-[85%] rounded-full overflow-hidden border-8 border-white/90 shadow-[0_10px_30px_rgba(0,0,0,0.15)] z-10 bg-white transition-all duration-700 group-hover:shadow-[0_0_80px_rgba(41,98,255,0.6)] group-hover:scale-[1.05] group-hover:-translate-y-4 group-hover:border-white">
+                                
+                                {/* Inner glow overlay */}
+                                <div className="absolute inset-0 bg-gradient-to-tr from-[#1044A9]/40 to-transparent mix-blend-overlay opacity-0 group-hover:opacity-100 transition-opacity duration-700 z-10 pointer-events-none"></div>
+                                
+                                <img 
+                                    src="/partners/boumedienne.jpeg" 
+                                    alt="À propos de EP2C" 
+                                    className="w-full h-full object-cover grayscale transition-all duration-700 group-hover:grayscale-0 group-hover:scale-110 group-hover:rotate-3"
+                                />
                             </div>
 
-                            <div className="flex flex-col gap-10">
-                                <div className="flex items-baseline justify-center select-none py-6">
-                                    <span className="text-[6rem] md:text-[7.5rem] font-serif font-black text-transparent bg-clip-text bg-gradient-to-b from-[#1044A9] to-blue-800 drop-shadow-sm transition-transform duration-300 hover:scale-105">e</span>
-                                    <span className="text-[7.5rem] md:text-[9rem] font-serif font-black text-transparent bg-clip-text bg-gradient-to-b from-[#2962ff] to-blue-600 -ml-2 drop-shadow-md transition-transform duration-300 hover:scale-105">P</span>
-                                    <span className="text-[6rem] md:text-[7.5rem] font-serif font-black text-transparent bg-clip-text bg-gradient-to-b from-gray-800 to-gray-600 -ml-2 drop-shadow-sm transition-transform duration-300 hover:scale-105">2</span>
-                                    <span className="text-[5rem] md:text-[6.5rem] font-serif font-black text-transparent bg-clip-text bg-gradient-to-b from-gray-400 to-gray-300 transition-transform duration-300 hover:scale-105">c</span>
-                                </div>
-                                
-                                <div className="h-px w-full bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
-                                
-                                <div className="grid grid-cols-2 gap-6">
-                                    <div className="p-5 bg-gradient-to-b from-gray-50 to-white rounded-2xl flex flex-col items-center text-center transition-all duration-300 hover:shadow-xl hover:shadow-blue-900/5 border border-gray-100 hover:border-blue-100 group/item">
-                                        <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center mb-4 group-hover/item:scale-110 transition-transform duration-300 group-hover/item:bg-blue-100 shadow-sm">
-                                            <Globe className="text-[#2962ff]" size={28} />
-                                        </div>
-                                        <span className="font-bold text-gray-900 text-base md:text-lg">International</span>
-                                        <span className="text-xs md:text-sm text-gray-500 font-medium mt-1">Présence Globale</span>
-                                    </div>
-                                    <div className="p-5 bg-gradient-to-b from-gray-50 to-white rounded-2xl flex flex-col items-center text-center transition-all duration-300 hover:shadow-xl hover:shadow-blue-900/5 border border-gray-100 hover:border-blue-100 group/item">
-                                        <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center mb-4 group-hover/item:scale-110 transition-transform duration-300 group-hover/item:bg-blue-100 shadow-sm">
-                                            <MapPin className="text-[#2962ff]" size={28} />
-                                        </div>
-                                        <span className="font-bold text-gray-900 text-base md:text-lg">Proximité</span>
-                                        <span className="text-xs md:text-sm text-gray-500 font-medium mt-1">Ancrage Local</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </Reveal>
-
-                {/* Right Column: Content */}
-                <div className="space-y-10">
-
-                    <Reveal delay="delay-100">
-                        <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white text-[#1044A9] text-sm font-bold border border-blue-100 shadow-sm">
-                            <span className="relative flex h-3 w-3">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-600"></span>
-                            </span>
-                            À propos de nous
-                        </div>
-                        <h2 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-gray-900 leading-[1.15] mt-6 tracking-tight">
-                            Depuis 2020, EP2C 🌍 <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#1044A9] to-indigo-600 pb-2 inline-block">
-                                accompagne les entreprises.
-                            </span>
-                        </h2>
-                    </Reveal>
-
-                    <Reveal delay="delay-200">
-                        <div className="relative">
-                            <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-[#2962ff] to-indigo-500 rounded-full"></div>
-                            <p className="text-lg md:text-xl text-gray-600 leading-relaxed pl-8 py-2">
-                                Basés en <strong className="text-gray-900 font-semibold">France 🇫🇷 et en Algérie 🇩🇿</strong>, et bientôt en Suisse 🇨🇭,
-                                nous accompagnons des entreprises de toutes tailles avec une vision internationale
-                                et des solutions locales.
-                            </p>
                         </div>
                     </Reveal>
 
-                    <div className="grid sm:grid-cols-2 gap-6 pt-4">
+                    {/* Right Column: Text Content */}
+                    <div className="space-y-8 pl-0 lg:pl-10">
+                        
+                        {/* Subtitle */}
+                        <Reveal>
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-1 bg-[#2962ff]"></div>
+                                <span className="text-gray-900 font-bold text-lg">À propos de nous</span>
+                            </div>
+                            
+                            <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 leading-[1.1] mt-6 font-serif">
+                                Nous offrons toujours les <span className="text-[#2962ff]">meilleures solutions</span>
+                            </h2>
+                        </Reveal>
 
-                        {/* Mission Card */}
-                        <Reveal delay="delay-300">
-                            <div className="group p-8 bg-white rounded-2xl border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-500 hover:-translate-y-2 relative overflow-hidden h-full">
-                                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-blue-100 transition-colors duration-500"></div>
-                                <div className="relative z-10 w-14 h-14 bg-gradient-to-br from-blue-50 to-blue-100/50 text-blue-600 rounded-xl flex items-center justify-center mb-6 group-hover:bg-gradient-to-br group-hover:from-blue-600 group-hover:to-[#1044A9] group-hover:text-white transition-all duration-500 shadow-sm">
-                                    <Target size={28} />
+                        {/* Drop cap text and video thumbnail */}
+                        <Reveal delay="delay-100">
+                            <div className="flex flex-col sm:flex-row gap-8 items-start">
+                                <div className="flex-1 relative">
+                                    <p className="text-gray-600 leading-relaxed text-lg">
+                                        <span className="float-left text-6xl font-bold text-[#1044A9] leading-[0.8] mr-3 mt-1 font-serif">E</span>
+                                        P2C a été optimisé pour vous offrir la meilleure expérience en matière d'accompagnement RH, de gestion de la paie et de formation. Nous créons des stratégies sur-mesure pour votre succès.
+                                    </p>
                                 </div>
-                                <h3 className="text-xl font-bold text-gray-900 mb-3 relative z-10">Notre mission 🎯</h3>
-                                <p className="text-gray-600 text-sm leading-relaxed relative z-10">
-                                    Des solutions sur-mesure à fort impact pour votre développement structurel et stratégique.
-                                </p>
+                                
+                                {/* Video Thumbnail Mockup */}
+                                <div className="w-40 h-28 flex-shrink-0 bg-gray-200 rounded-xl overflow-hidden relative shadow-md group cursor-pointer">
+                                    <img src="/service_hr.png" alt="Video thumbnail" className="w-full h-full object-cover grayscale group-hover:scale-110 transition-transform duration-500" />
+                                    <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                                        <div className="w-10 h-10 bg-[#2962ff] rounded-full flex items-center justify-center pl-1 group-hover:bg-[#1044A9] transition-colors">
+                                            <Play className="text-white w-5 h-5 fill-current" />
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </Reveal>
 
-                        {/* Valeurs Card */}
-                        <Reveal delay="delay-400">
-                            <div className="group p-8 bg-white rounded-2xl border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.08)] transition-all duration-500 hover:-translate-y-2 relative overflow-hidden h-full">
-                                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-indigo-100 transition-colors duration-500"></div>
-                                <div className="relative z-10 w-14 h-14 bg-gradient-to-br from-indigo-50 to-indigo-100/50 text-indigo-600 rounded-xl flex items-center justify-center mb-6 group-hover:bg-gradient-to-br group-hover:from-indigo-600 group-hover:to-purple-600 group-hover:text-white transition-all duration-500 shadow-sm">
-                                    <Rocket size={28} />
+                        <div className="h-px w-full bg-gray-100 my-8"></div>
+
+                        {/* Features Icons */}
+                        <Reveal delay="delay-200">
+                            <div className="grid grid-cols-2 gap-8">
+                                <div className="flex items-center gap-4">
+                                    <div className="text-[#2962ff]">
+                                        <Users size={48} strokeWidth={1.5} />
+                                    </div>
+                                    <span className="font-bold text-gray-900 text-lg leading-tight">
+                                        Équipe<br/>d'experts
+                                    </span>
                                 </div>
-                                <h3 className="text-xl font-bold text-gray-900 mb-3 relative z-10">Nos valeurs 💎</h3>
-                                <ul className="text-sm text-gray-600 space-y-3 relative z-10 font-medium">
-                                    <li className="flex items-center gap-3"><span className="text-lg">🌟</span> Excellence</li>
-                                    <li className="flex items-center gap-3"><span className="text-lg">🤝</span> Proximité</li>
-                                    <li className="flex items-center gap-3"><span className="text-lg">🔥</span> Engagement</li>
-                                </ul>
+                                <div className="flex items-center gap-4">
+                                    <div className="text-[#2962ff]">
+                                        <Target size={48} strokeWidth={1.5} />
+                                    </div>
+                                    <span className="font-bold text-gray-900 text-lg leading-tight">
+                                        Solutions<br/>innovantes
+                                    </span>
+                                </div>
                             </div>
                         </Reveal>
 
                     </div>
-
                 </div>
             </div>
         </section>

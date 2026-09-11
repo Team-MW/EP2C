@@ -5,15 +5,17 @@ import { v2 as cloudinary } from 'cloudinary';
 import streamifier from 'streamifier';
 import 'dotenv/config';
 import fs from 'fs/promises';
+import fsSync from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import clerk from '@clerk/clerk-sdk-node';
+import { PrismaClient } from '@prisma/client';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const DB_PATH = path.join(__dirname, 'db.json');
 
 const app = express();
+const prisma = new PrismaClient();
 
 // --- CONFIGURATION ---
 cloudinary.config({
@@ -28,46 +30,26 @@ app.use(cors());
 app.use(express.json());
 
 // Setup static uploads directory for PDFs
-import fsSync from 'fs';
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
 if (!fsSync.existsSync(UPLOADS_DIR)) {
     fsSync.mkdirSync(UPLOADS_DIR);
 }
 app.use('/api/uploads', express.static(UPLOADS_DIR));
 
-// --- DB HELPERS ---
-async function readDb() {
-    try {
-        const data = await fs.readFile(DB_PATH, 'utf-8');
-        return JSON.parse(data);
-    } catch (e) {
-        return { users: [], folders: [], documents: [], appointments: [] };
-    }
-}
-
-async function writeDb(data) {
-    await fs.writeFile(DB_PATH, JSON.stringify(data, null, 2), 'utf-8');
-}
-
-function generateId() {
-    return Date.now() + Math.floor(Math.random() * 1000);
-}
 
 // --- ROUTES ---
 
 // 0. HEALTH CHECK
 app.get('/api/ping', (req, res) => {
-    res.json({ status: 'ok', message: 'Backend is running with JSON DB!', time: new Date() });
+    res.json({ status: 'ok', message: 'Backend is running with MySQL (PlanetScale)!', time: new Date() });
 });
 
 // 1. GET ALL USERS (Admin)
 app.get('/api/users', async (req, res) => {
     try {
-        const db = await readDb();
-        const users = db.users.map(u => ({
-            ...u,
-            documents: db.documents.filter(d => d.userId === u.id)
-        }));
+        const users = await prisma.user.findMany({
+            include: { documents: true }
+        });
         res.json(users);
     } catch (error) {
         console.error(error);
@@ -79,33 +61,39 @@ app.get('/api/users', async (req, res) => {
 app.post('/api/users', async (req, res) => {
     const { clerkId, email, firstName, lastName, role } = req.body;
     try {
-        const db = await readDb();
-        let user = db.users.find(u => u.clerkId === clerkId);
+        let user = await prisma.user.findUnique({
+            where: { clerkId }
+        });
 
         if (!user && email) {
-            user = db.users.find(u => u.email === email);
+            user = await prisma.user.findUnique({
+                where: { email }
+            });
             if (user) {
-                user.clerkId = clerkId;
-                if (firstName) user.firstName = firstName;
-                if (lastName) user.lastName = lastName;
+                user = await prisma.user.update({
+                    where: { id: user.id },
+                    data: {
+                        clerkId,
+                        ...(firstName && { firstName }),
+                        ...(lastName && { lastName })
+                    }
+                });
             }
         }
 
         if (!user) {
-            user = {
-                id: generateId(),
-                clerkId,
-                email,
-                firstName,
-                lastName,
-                role: role || 'client',
-                status: 'En attente',
-                createdAt: new Date().toISOString()
-            };
-            db.users.push(user);
+            user = await prisma.user.create({
+                data: {
+                    clerkId,
+                    email,
+                    firstName,
+                    lastName,
+                    role: role || 'client',
+                    status: 'En attente'
+                }
+            });
         }
         
-        await writeDb(db);
         res.json(user);
     } catch (error) {
         console.error(error);
@@ -141,31 +129,29 @@ app.post('/api/users/manual', async (req, res) => {
             }
         }
 
-        const db = await readDb();
-        let user = db.users.find(u => u.email === email);
+        let user = await prisma.user.findUnique({
+            where: { email }
+        });
 
         if (user) {
-            user.clerkId = clerkId;
-            user.firstName = firstName;
-            user.lastName = lastName;
-            user.company = company;
-            user.status = 'En attente';
+            user = await prisma.user.update({
+                where: { id: user.id },
+                data: { clerkId, firstName, lastName, company, status: 'En attente' }
+            });
         } else {
-            user = {
-                id: generateId(),
-                clerkId,
-                email,
-                firstName,
-                lastName,
-                company,
-                role: 'client',
-                status: 'En attente',
-                createdAt: new Date().toISOString()
-            };
-            db.users.push(user);
+            user = await prisma.user.create({
+                data: {
+                    clerkId,
+                    email,
+                    firstName,
+                    lastName,
+                    company,
+                    role: 'client',
+                    status: 'En attente'
+                }
+            });
         }
 
-        await writeDb(db);
         res.json(user);
     } catch (error) {
         console.error("Manual create error:", error);
@@ -177,13 +163,13 @@ app.post('/api/users/manual', async (req, res) => {
 app.get('/api/users/:clerkId/documents', async (req, res) => {
     const { clerkId } = req.params;
     try {
-        const db = await readDb();
-        const user = db.users.find(u => u.clerkId === clerkId);
+        const user = await prisma.user.findUnique({
+            where: { clerkId },
+            include: { documents: true }
+        });
         
         if (!user) return res.status(404).json({ error: 'User not found' });
-
-        const userDocs = db.documents.filter(d => d.userId === user.id);
-        res.json(userDocs);
+        res.json(user.documents);
     } catch (error) {
         res.status(500).json({ error: 'Erreur recuperation documents' });
     }
@@ -202,7 +188,6 @@ app.post('/api/documents', upload.single('file'), async (req, res) => {
         let format;
 
         if (file.mimetype === 'application/pdf') {
-            // Save PDF locally
             const fileName = `${Date.now()}_${file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
             const filePath = path.join(UPLOADS_DIR, fileName);
             await fs.writeFile(filePath, file.buffer);
@@ -210,25 +195,15 @@ app.post('/api/documents', upload.single('file'), async (req, res) => {
             size = (file.size / 1024 / 1024).toFixed(2) + ' MB';
             format = 'pdf';
         } else {
-            // Use Cloudinary for other files
             const uploadFromBuffer = (buffer) => {
                 return new Promise((resolve, reject) => {
                     let cld_upload_stream = cloudinary.uploader.upload_stream(
-                        {
-                            folder: "ep2c_documents",
-                            resource_type: "auto",
-                            access_mode: "public",
-                            type: "upload"
-                        },
-                        (error, result) => {
-                            if (result) resolve(result);
-                            else reject(error);
-                        }
+                        { folder: "ep2c_documents", resource_type: "auto", access_mode: "public", type: "upload" },
+                        (error, result) => { if (result) resolve(result); else reject(error); }
                     );
                     streamifier.createReadStream(buffer).pipe(cld_upload_stream);
                 });
             };
-
             const result = await uploadFromBuffer(file.buffer);
             secure_url = result.secure_url;
             size = (result.bytes / 1024 / 1024).toFixed(2) + ' MB';
@@ -239,21 +214,18 @@ app.post('/api/documents', upload.single('file'), async (req, res) => {
         const displayName = `[${category}] ${file.originalname}`;
         const parsedFolderId = folderId && folderId !== 'null' && folderId !== 'undefined' ? parseInt(folderId) : null;
 
-        const db = await readDb();
-        const doc = {
-            id: generateId(),
-            name: displayName,
-            type: format,
-            size: size,
-            url: secure_url,
-            status: 'En attente',
-            createdAt: new Date().toISOString(),
-            userId: parseInt(userId),
-            folderId: parsedFolderId,
-            isRead: false
-        };
-        db.documents.push(doc);
-        await writeDb(db);
+        const doc = await prisma.document.create({
+            data: {
+                name: displayName,
+                type: format,
+                size: size,
+                url: secure_url,
+                status: 'En attente',
+                isRead: false,
+                userId: parseInt(userId),
+                folderId: parsedFolderId
+            }
+        });
 
         res.json(doc);
     } catch (error) {
@@ -266,17 +238,13 @@ app.post('/api/documents', upload.single('file'), async (req, res) => {
 app.post('/api/folders', async (req, res) => {
     const { name, userId, parentId } = req.body;
     try {
-        const db = await readDb();
-        const folder = {
-            id: generateId(),
-            name,
-            createdAt: new Date().toISOString(),
-            userId: parseInt(userId),
-            parentId: parentId ? parseInt(parentId) : null
-        };
-        db.folders.push(folder);
-        await writeDb(db);
-        
+        const folder = await prisma.folder.create({
+            data: {
+                name,
+                userId: parseInt(userId),
+                parentId: parentId ? parseInt(parentId) : null
+            }
+        });
         res.json(folder);
     } catch (error) {
         res.status(500).json({ error: 'Erreur création dossier' });
@@ -287,15 +255,17 @@ app.post('/api/folders', async (req, res) => {
 app.get('/api/users/:clerkId/folders', async (req, res) => {
     const { clerkId } = req.params;
     try {
-        const db = await readDb();
-        const user = db.users.find(u => u.clerkId === clerkId);
+        const user = await prisma.user.findUnique({
+            where: { clerkId },
+            include: {
+                folders: {
+                    orderBy: { createdAt: 'desc' }
+                }
+            }
+        });
         
         if (!user) return res.status(404).json({ error: 'User not found' });
-
-        const userFolders = db.folders.filter(f => f.userId === user.id);
-        // sort by desc
-        userFolders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        res.json(userFolders);
+        res.json(user.folders);
     } catch (error) {
         res.status(500).json({ error: 'Erreur recuperation dossiers' });
     }
@@ -305,13 +275,20 @@ app.get('/api/users/:clerkId/folders', async (req, res) => {
 app.delete('/api/folders/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        const db = await readDb();
         const parsedId = parseInt(id);
         
-        db.folders = db.folders.filter(f => f.id !== parsedId);
-        db.documents = db.documents.filter(d => d.folderId !== parsedId);
+        // Documents matching the folder ID will be SetNull based on the Prisma schema relation (onDelete: SetNull), 
+        // but we can also manually delete them if that was the intent. Actually the old API just filtered them out?
+        // Old API: db.documents = db.documents.filter(d => d.folderId !== parsedId);
+        // This implies they were deleted. So we delete them explicitly.
+        await prisma.document.deleteMany({
+            where: { folderId: parsedId }
+        });
         
-        await writeDb(db);
+        await prisma.folder.delete({
+            where: { id: parsedId }
+        });
+        
         res.json({ success: true });
     } catch (error) {
         res.status(500).json({ error: 'Erreur suppression dossier' });
@@ -323,10 +300,10 @@ app.put('/api/folders/:id/rename', async (req, res) => {
     const { id } = req.params;
     const { name } = req.body;
     try {
-        const db = await readDb();
-        const folder = db.folders.find(f => f.id === parseInt(id));
-        if (folder) folder.name = name;
-        await writeDb(db);
+        const folder = await prisma.folder.update({
+            where: { id: parseInt(id) },
+            data: { name }
+        });
         res.json(folder);
     } catch (error) {
         res.status(500).json({ error: 'Erreur renommage dossier' });
@@ -338,10 +315,10 @@ app.put('/api/folders/:id/move', async (req, res) => {
     const { id } = req.params;
     const { parentId } = req.body;
     try {
-        const db = await readDb();
-        const folder = db.folders.find(f => f.id === parseInt(id));
-        if (folder) folder.parentId = parentId ? parseInt(parentId) : null;
-        await writeDb(db);
+        const folder = await prisma.folder.update({
+            where: { id: parseInt(id) },
+            data: { parentId: parentId ? parseInt(parentId) : null }
+        });
         res.json(folder);
     } catch (error) {
         res.status(500).json({ error: 'Erreur déplacement dossier' });
@@ -352,11 +329,10 @@ app.put('/api/folders/:id/move', async (req, res) => {
 app.put('/api/documents/:id/rename', async (req, res) => {
     const { name } = req.body;
     try {
-        const db = await readDb();
-        const doc = db.documents.find(d => d.id === parseInt(req.params.id));
-        if (!doc) return res.status(404).json({ error: 'Doc non trouvé' });
-        doc.name = name;
-        await writeDb(db);
+        const doc = await prisma.document.update({
+            where: { id: parseInt(req.params.id) },
+            data: { name }
+        });
         res.json(doc);
     } catch (e) {
         res.status(500).json({ error: 'Erreur serveur' });
@@ -366,11 +342,10 @@ app.put('/api/documents/:id/rename', async (req, res) => {
 // 10b. MARK DOCUMENT AS READ
 app.put('/api/documents/:id/read', async (req, res) => {
     try {
-        const db = await readDb();
-        const doc = db.documents.find(d => d.id === parseInt(req.params.id));
-        if (!doc) return res.status(404).json({ error: 'Doc non trouvé' });
-        doc.isRead = true;
-        await writeDb(db);
+        const doc = await prisma.document.update({
+            where: { id: parseInt(req.params.id) },
+            data: { isRead: true }
+        });
         res.json({ success: true, doc });
     } catch (e) {
         res.status(500).json({ error: 'Erreur serveur' });
@@ -382,10 +357,10 @@ app.put('/api/documents/:id/move', async (req, res) => {
     const { id } = req.params;
     const { folderId } = req.body;
     try {
-        const db = await readDb();
-        const document = db.documents.find(d => d.id === parseInt(id));
-        if (document) document.folderId = folderId ? parseInt(folderId) : null;
-        await writeDb(db);
+        const document = await prisma.document.update({
+            where: { id: parseInt(id) },
+            data: { folderId: folderId ? parseInt(folderId) : null }
+        });
         res.json(document);
     } catch (error) {
         res.status(500).json({ error: 'Erreur déplacement document' });
@@ -396,16 +371,15 @@ app.put('/api/documents/:id/move', async (req, res) => {
 app.delete('/api/users/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        const db = await readDb();
         const parsedId = parseInt(id);
         
-        db.documents = db.documents.filter(d => d.userId !== parsedId);
-        db.folders = db.folders.filter(f => f.userId !== parsedId);
-        db.users = db.users.filter(u => u.id !== parsedId);
+        await prisma.document.deleteMany({ where: { userId: parsedId } });
+        await prisma.folder.deleteMany({ where: { userId: parsedId } });
+        await prisma.user.delete({ where: { id: parsedId } });
         
-        await writeDb(db);
         res.json({ success: true, message: 'Utilisateur supprimé avec succès' });
     } catch (error) {
+        console.error(error);
         res.status(500).json({ error: 'Erreur suppression utilisateur' });
     }
 });
@@ -414,26 +388,25 @@ app.delete('/api/users/:id', async (req, res) => {
 app.delete('/api/documents/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        const db = await readDb();
         const parsedId = parseInt(id);
-        const doc = db.documents.find(d => d.id === parsedId);
+        const doc = await prisma.document.findUnique({ where: { id: parsedId } });
         
         if (!doc) return res.status(404).json({ error: 'Document non trouvé' });
 
-        const urlParts = doc.url.split('/');
-        const fileNameWithExt = urlParts[urlParts.length - 1];
-        const fileName = fileNameWithExt.split('.')[0];
-        const publicId = `ep2c_documents/${fileName}`;
+        if (doc.url && doc.url.includes('cloudinary')) {
+            const urlParts = doc.url.split('/');
+            const fileNameWithExt = urlParts[urlParts.length - 1];
+            const fileName = fileNameWithExt.split('.')[0];
+            const publicId = `ep2c_documents/${fileName}`;
 
-        try {
-            await cloudinary.uploader.destroy(publicId);
-        } catch (e) {
-            console.warn("Cloudinary delete warning:", e);
+            try {
+                await cloudinary.uploader.destroy(publicId);
+            } catch (e) {
+                console.warn("Cloudinary delete warning:", e);
+            }
         }
 
-        db.documents = db.documents.filter(d => d.id !== parsedId);
-        await writeDb(db);
-
+        await prisma.document.delete({ where: { id: parsedId } });
         res.json({ success: true, message: 'Document supprimé avec succès' });
     } catch (error) {
         res.status(500).json({ error: 'Erreur suppression document' });
@@ -441,7 +414,7 @@ app.delete('/api/documents/:id', async (req, res) => {
 });
 
 app.get('/api', (req, res) => {
-    res.send('API EP2C JSON is running');
+    res.send('API EP2C Prisma is running');
 });
 
 export default app;
@@ -449,6 +422,6 @@ export default app;
 if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
-        console.log(`Serveur Backend (JSON) démarré sur http://localhost:${PORT}`);
+        console.log(`Serveur Backend (Prisma) démarré sur http://localhost:${PORT}`);
     });
 }

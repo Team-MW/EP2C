@@ -2951,3 +2951,15 @@ header {
 .item-dragging {
   opacity: 0.5;
 }
+
+@keyframes scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(calc(-50% - 1rem)); } /* -50% because we duplicate the content, -1rem for gap */
+}
+
+.animate-scroll {
+  animation: scroll 30s linear infinite;
+}
+.animate-scroll-reverse {
+  animation: scroll 35s linear infinite reverse;
+}
