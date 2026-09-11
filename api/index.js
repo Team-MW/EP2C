@@ -30,11 +30,19 @@ app.use(cors());
 app.use(express.json());
 
 // Setup static uploads directory for PDFs
-const UPLOADS_DIR = path.join(__dirname, 'uploads');
-if (!fsSync.existsSync(UPLOADS_DIR)) {
-    fsSync.mkdirSync(UPLOADS_DIR);
+// On Vercel, only /tmp is writable. Locally we use api/uploads.
+const isVercel = !!process.env.VERCEL;
+const UPLOADS_DIR = isVercel ? '/tmp/uploads' : path.join(__dirname, 'uploads');
+try {
+    if (!fsSync.existsSync(UPLOADS_DIR)) {
+        fsSync.mkdirSync(UPLOADS_DIR, { recursive: true });
+    }
+} catch (e) {
+    console.warn('Could not create uploads dir:', e.message);
 }
-app.use('/api/uploads', express.static(UPLOADS_DIR));
+if (!isVercel) {
+    app.use('/api/uploads', express.static(UPLOADS_DIR));
+}
 
 
 // --- ROUTES ---
