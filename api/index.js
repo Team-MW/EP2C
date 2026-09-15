@@ -8,14 +8,21 @@ import fs from 'fs/promises';
 import fsSync from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import clerk from '@clerk/clerk-sdk-node';
 import { PrismaClient } from '@prisma/client';
+import { checkDatabase } from '../server/database-health.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+console.log('Démarrage du backend EP2C...');
+
 const app = express();
 const prisma = new PrismaClient();
+
+async function getClerk() {
+    const clerkMod = await import('@clerk/clerk-sdk-node');
+    return clerkMod.default || clerkMod.clerkClient;
+}
 
 // --- CONFIGURATION ---
 cloudinary.config({
@@ -24,7 +31,7 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-const upload = multer({ storage: multer.memoryStorage() });
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 4 * 1024 * 1024 } });
 
 app.use(cors());
 app.use(express.json());
@@ -49,7 +56,12 @@ if (!isVercel) {
 
 // 0. HEALTH CHECK
 app.get('/api/ping', (req, res) => {
-    res.json({ status: 'ok', message: 'Backend is running with MySQL (PlanetScale)!', time: new Date() });
+    res.json({ status: 'ok', message: 'Backend is running', time: new Date() });
+});
+
+app.get('/api/health', async (req, res) => {
+    const result = await checkDatabase(prisma);
+    res.set('Cache-Control', 'no-store').status(result.status === 'ok' ? 200 : 503).json(result);
 });
 
 // 1. GET ALL USERS (Admin)
@@ -68,7 +80,6 @@ app.get('/api/users', async (req, res) => {
 // 2. CREATE / SYNC USER
 app.post('/api/users', async (req, res) => {
     console.log("=== POST /api/users CALLED ===");
-    console.log("Req Body:", req.body);
     const { clerkId, email, firstName, lastName, role } = req.body;
     try {
         let user = await prisma.user.findUnique({
@@ -106,9 +117,9 @@ app.post('/api/users', async (req, res) => {
         
         console.log("=== USER SYNC SUCCESS ===", user.id);
         res.json(user);
-    } catch (error: any) {
+    } catch (error) {
         console.error("=== ERROR IN POST /api/users ===", error);
-        res.status(500).json({ error: 'Erreur: ' + (error.message || 'unknown error') });
+        res.status(500).json({ error: 'Impossible de synchroniser le compte. Vérifiez la connexion à la base de données.' });
     }
 });
 
@@ -120,6 +131,7 @@ app.post('/api/users/manual', async (req, res) => {
         let clerkId;
 
         try {
+            const clerk = await getClerk();
             clerkUser = await clerk.users.createUser({
                 emailAddress: [email],
                 firstName,
@@ -129,6 +141,7 @@ app.post('/api/users/manual', async (req, res) => {
             clerkId = clerkUser.id;
         } catch (clerkErr) {
             if (clerkErr.errors && clerkErr.errors[0]?.code === 'form_identifier_exists') {
+                const clerk = await getClerk();
                 const userList = await clerk.users.getUserList({ emailAddress: [email] });
                 if (userList.length > 0) {
                     clerkId = userList[0].id;
@@ -198,7 +211,7 @@ app.post('/api/documents', upload.single('file'), async (req, res) => {
         let size;
         let format;
 
-        if (file.mimetype === 'application/pdf') {
+        if (file.mimetype === 'application/pdf' && !isVercel) {
             const fileName = `${Date.now()}_${file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
             const filePath = path.join(UPLOADS_DIR, fileName);
             await fs.writeFile(filePath, file.buffer);
@@ -209,7 +222,7 @@ app.post('/api/documents', upload.single('file'), async (req, res) => {
             const uploadFromBuffer = (buffer) => {
                 return new Promise((resolve, reject) => {
                     let cld_upload_stream = cloudinary.uploader.upload_stream(
-                        { folder: "ep2c_documents", resource_type: "auto", access_mode: "public", type: "upload" },
+                        { folder: "ep2c_documents", resource_type: file.mimetype === 'application/pdf' ? 'raw' : 'auto', access_mode: "public", type: "upload" },
                         (error, result) => { if (result) resolve(result); else reject(error); }
                     );
                     streamifier.createReadStream(buffer).pipe(cld_upload_stream);
@@ -218,7 +231,7 @@ app.post('/api/documents', upload.single('file'), async (req, res) => {
             const result = await uploadFromBuffer(file.buffer);
             secure_url = result.secure_url;
             size = (result.bytes / 1024 / 1024).toFixed(2) + ' MB';
-            format = result.format || 'unknown';
+            format = file.mimetype === 'application/pdf' ? 'pdf' : (result.format || 'unknown');
         }
 
         const category = req.body.category || 'Autre';
@@ -407,11 +420,12 @@ app.delete('/api/documents/:id', async (req, res) => {
         if (doc.url && doc.url.includes('cloudinary')) {
             const urlParts = doc.url.split('/');
             const fileNameWithExt = urlParts[urlParts.length - 1];
-            const fileName = fileNameWithExt.split('.')[0];
+            const isRaw = doc.url.includes('/raw/upload/');
+            const fileName = isRaw ? fileNameWithExt : fileNameWithExt.replace(/\.[^.]+$/, '');
             const publicId = `ep2c_documents/${fileName}`;
 
             try {
-                await cloudinary.uploader.destroy(publicId);
+                await cloudinary.uploader.destroy(publicId, { resource_type: isRaw ? 'raw' : (doc.url.includes('/video/upload/') ? 'video' : 'image') });
             } catch (e) {
                 console.warn("Cloudinary delete warning:", e);
             }
@@ -430,9 +444,32 @@ app.get('/api', (req, res) => {
 
 export default app;
 
-if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
-    const PORT = process.env.PORT || 3000;
-    app.listen(PORT, () => {
+app.use('/api', (req, res) => res.status(404).json({ error: 'Route API introuvable' }));
+app.use((error, req, res, next) => {
+    if (res.headersSent) return next(error);
+    if (error.code === 'LIMIT_FILE_SIZE') {
+        return res.status(413).json({ error: 'Le fichier dépasse la limite de 4 Mo.' });
+    }
+    res.status(500).json({ error: 'Erreur serveur' });
+});
+
+if (!process.env.VERCEL) {
+    const PORT = process.env.PORT || 3001;
+    const server = app.listen(PORT, async () => {
         console.log(`Serveur Backend (Prisma) démarré sur http://localhost:${PORT}`);
+        try {
+            await prisma.$connect();
+            console.log('Base de données connectée');
+        } catch (e) {
+            console.error('Impossible de se connecter à la base de données:', e.message);
+        }
+    });
+    server.on('error', (err) => {
+        if (err.code === 'EADDRINUSE') {
+            console.error(`Le port ${PORT} est déjà utilisé. Arrête l'autre application ou lance avec PORT=3002 npm run dev`);
+        } else {
+            console.error('Erreur serveur:', err.message);
+        }
+        process.exit(1);
     });
 }

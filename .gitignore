@@ -16,6 +16,7 @@ dist-ssr
 
 # Base de données locale (données clients - NE PAS commiter)
 api/db.json
+api/uploads/
 
 # Editor directories and files
 .vscode/*

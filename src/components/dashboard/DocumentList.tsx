@@ -25,6 +25,7 @@ export default function DocumentList() {
     const [documents, setDocuments] = useState<DbDocument[]>([]);
     const [folders, setFolders] = useState<DbFolder[]>([]);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
 
     const [currentFolderId, setCurrentFolderId] = useState<number | null>(null);
@@ -46,15 +47,26 @@ export default function DocumentList() {
         if (!user) return;
 
         const fetchData = async () => {
+            setLoading(true);
+            setLoadError('');
             try {
+                const syncRes = await fetch('/api/users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ clerkId: user.id, email: user.primaryEmailAddress?.emailAddress,
+                        firstName: user.firstName, lastName: user.lastName })
+                });
+                if (!syncRes.ok) throw new Error('Synchronisation du compte impossible');
                 const [docsRes, foldersRes] = await Promise.all([
                     fetch(`/api/users/${user.id}/documents`),
                     fetch(`/api/users/${user.id}/folders`)
                 ]);
                 
-                if (docsRes.ok) setDocuments(await docsRes.json());
-                if (foldersRes.ok) setFolders(await foldersRes.json());
+                if (!docsRes.ok || !foldersRes.ok) throw new Error('Chargement impossible');
+                setDocuments(await docsRes.json());
+                setFolders(await foldersRes.json());
             } catch (error) {
+                setLoadError('Impossible de charger vos documents. Veuillez réessayer.');
                 console.error('Error fetching data:', error);
             } finally {
                 setLoading(false);
@@ -271,6 +283,10 @@ export default function DocumentList() {
     const visibleDocs = documents.filter(doc => 
         (searchTerm ? doc.name.toLowerCase().includes(searchTerm.toLowerCase()) : doc.folderId === currentFolderId)
     );
+
+    if (loadError) return <div role="alert" className="p-4 bg-red-50 text-red-700">
+        {loadError} <button onClick={() => window.location.reload()} className="underline">Réessayer</button>
+    </div>;
 
     if (loading) {
         return (

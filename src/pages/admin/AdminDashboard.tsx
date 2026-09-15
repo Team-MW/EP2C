@@ -168,6 +168,7 @@ export default function AdminDashboard() {
     const navigate = useNavigate();
 
     const [users, setUsers] = useState<User[]>([]);
+    const [loadError, setLoadError] = useState('');
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [activeView, setActiveView] = useState<'clients' | 'stats'>('clients');
     const [searchTerm, setSearchTerm] = useState('');
@@ -199,15 +200,17 @@ export default function AdminDashboard() {
     }, []);
 
     const fetchUsers = async () => {
+        setLoadError('');
         try {
             const res = await fetch('/api/users');
             if (res.ok) {
                 const data = await res.json();
                 setUsers(data);
             } else {
-                console.warn('Failed to fetch users:', res.status);
+                throw new Error(`Erreur API (${res.status})`);
             }
         } catch (error) {
+            setLoadError('Impossible de charger les clients. Vérifiez la connexion au serveur et réessayez.');
             console.warn("Failed to fetch users - backend may not be running", error);
         }
     };
@@ -439,6 +442,9 @@ export default function AdminDashboard() {
 
             {/* Main Content */}
             <main className="flex-1 flex flex-col overflow-hidden relative">
+                {loadError && <div role="alert" className="p-4 bg-red-50 text-red-700">
+                    {loadError} <button onClick={fetchUsers} className="underline font-semibold">Réessayer</button>
+                </div>}
                 {/* Header */}
                 <header className="modern-header h-16 flex items-center justify-between px-4 md:px-8 shrink-0">
                     <div className="flex items-center gap-3">

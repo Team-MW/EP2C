@@ -8,7 +8,7 @@ export default function FileUploader() {
             </div>
             <h3 className="text-lg font-medium text-gray-900 mb-2">Déposez vos documents ici</h3>
             <p className="text-gray-500 text-sm mb-4">ou cliquez pour sélectionner des fichiers</p>
-            <p className="text-xs text-gray-400">PDF, DOCX, JPG jusqu'à 10Mo</p>
+            <p className="text-xs text-gray-400">PDF, DOCX, JPG jusqu'à 4 Mo</p>
         </div>
     );
 }

@@ -106,8 +106,9 @@ export default function ClientDashboard() {
                     fetch(`/api/users/${user.id}/folders`)
                 ]);
                 
-                if (docsRes.ok) setDocuments(await docsRes.json());
-                if (foldersRes.ok) setFolders(await foldersRes.json());
+                if (!docsRes.ok || !foldersRes.ok) throw new Error('Impossible de charger les documents ou les dossiers.');
+                setDocuments(await docsRes.json());
+                setFolders(await foldersRes.json());
                 
             } catch (err: any) {
                 console.error("Error syncing user:", err);
@@ -123,6 +124,10 @@ export default function ClientDashboard() {
     };
 
     const processFile = async (file: File) => {
+        if (file.size > 4 * 1024 * 1024) {
+            setUploadError('Le fichier dépasse la limite de 4 Mo.');
+            return;
+        }
         if (!dbUser) {
             setUploadError("Utilisateur non synchronisé avec le serveur. La connexion à la base de données a échoué. Veuillez recharger la page ou redémarrer le serveur.");
             return;
@@ -461,6 +466,7 @@ export default function ClientDashboard() {
                     <span className="font-semibold text-[#1044A9]">
                         Cliquez pour ajouter un document dans : <span className="underline">{selectedCategory}</span>
                     </span>
+                    <p className="text-sm text-gray-500 mt-2">4 Mo maximum par fichier</p>
                 </div>
             </div>
 
@@ -541,7 +547,7 @@ export default function ClientDashboard() {
                         </div>
                     )}
 
-                    <a href="/dashboard/documents" className="block w-full py-3 bg-gray-50 text-gray-600 font-semibold rounded-xl hover:bg-gray-100 transition-colors text-sm mt-auto text-center">
+                    <a href="/panel/documents" className="block w-full py-3 bg-gray-50 text-gray-600 font-semibold rounded-xl hover:bg-gray-100 transition-colors text-sm mt-auto text-center">
                         Voir l'historique complet
                     </a>
                 </div>
