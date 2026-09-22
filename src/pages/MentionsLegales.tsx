@@ -43,7 +43,7 @@ export default function MentionsLegales() {
                             <section className="legal-section">
                                 <h2 className="legal-section-title">2. Hébergement</h2>
                                 <p className="legal-text">
-                                    Le site est hébergé par [Nom de l'hébergeur], dont le siège social est situé [Adresse de l'hébergeur], joignable par téléphone au [Numéro].
+                                    Le site est hébergé par <strong>Vercel Inc.</strong>, dont le siège social est situé au 440 N Barranca Ave #4133, Covina, CA 91723, États-Unis, joignable par téléphone au +1&nbsp;415&nbsp;980&nbsp;8007 et via le site <a href="https://vercel.com" target="_blank" rel="noopener noreferrer" className="microdidact-link">vercel.com</a>.
                                 </p>
                             </section>
 

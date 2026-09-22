@@ -153,9 +153,17 @@ export default function Blog() {
                     {/* Load More Button */}
                     <div className="text-center mt-12">
                         <Reveal>
-                            <button className="group relative px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                                <span className="relative z-10">Charger plus d'articles</span>
-                                <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            <button
+                                type="button"
+                                className="group relative inline-flex items-center justify-center px-8 py-4 font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden"
+                                style={{
+                                    background: 'linear-gradient(90deg, #2563eb 0%, #7c3aed 100%)',
+                                    color: '#ffffff',
+                                }}
+                            >
+                                <span className="relative z-10" style={{ color: '#ffffff' }}>
+                                    Charger plus d&apos;articles
+                                </span>
                             </button>
                         </Reveal>
                     </div>

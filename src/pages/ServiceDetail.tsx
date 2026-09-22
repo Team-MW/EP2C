@@ -19,7 +19,7 @@ function FAQItem({ question, answer }: { question: string, answer: string }) {
                 )}
             </button>
             <div
-                className={`transition-all duration-300 ease-in-out text-gray-600 overflow-hidden ${isOpen ? 'max-h-40 opacity-100 p-5 pt-0 border-t border-gray-100' : 'max-h-0 opacity-0'
+                className={`transition-all duration-300 ease-in-out text-gray-600 overflow-hidden ${isOpen ? 'max-h-96 opacity-100 p-5 pt-4 border-t border-gray-100' : 'max-h-0 opacity-0'
                     }`}
             >
                 {answer}
@@ -175,40 +175,64 @@ export default function ServiceDetail() {
                 </div>
             </div>
 
-            {/* Benefits Section */}
-            {service.benefits && service.benefits.length > 0 && (
-                <Reveal delay="delay-200">
-                    <div className="container mx-auto px-4 relative z-10 mt-16">
-                        <div className="max-w-6xl mx-auto bg-gradient-to-br from-[#1044A9] to-[#2563eb] p-10 rounded-2xl text-white shadow-xl">
-                            <h3 className="text-2xl font-bold mb-6">Vos bénéfices</h3>
-                            <ul className="space-y-4">
-                                {service.benefits.map((benefit, idx) => (
-                                    <li key={idx} className="flex items-start gap-4">
-                                        <CheckCircle className="text-white shrink-0 mt-1" size={20} />
-                                        <span className="text-white/90 font-medium">{benefit}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    </div>
-                </Reveal>
-            )}
+            {/* Benefits + FAQ — agencement unifié */}
+            {(service.benefits?.length || service.faq?.length) ? (
+                <div className="bg-gray-50 py-20 border-t border-gray-100">
+                    <div className="container mx-auto px-4">
+                        <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-10 lg:gap-12 items-start">
 
-            {/* FAQ Section */}
-            {service.faq && service.faq.length > 0 && (
-                <Reveal delay="delay-300">
-                    <div className="container mx-auto px-4 relative z-10 mt-20">
-                        <div className="max-w-3xl mx-auto">
-                            <h3 className="text-3xl font-serif font-bold text-center mb-10 text-gray-900">Questions Fréquentes</h3>
-                            <div className="space-y-4">
-                                {service.faq.map((item, idx) => (
-                                    <FAQItem key={idx} question={item.question} answer={item.answer} />
-                                ))}
-                            </div>
+                            {/* Vos bénéfices */}
+                            {service.benefits && service.benefits.length > 0 && (
+                                <Reveal delay="delay-100">
+                                    <div className="bg-gradient-to-br from-[#1044A9] to-[#2962ff] p-8 md:p-10 rounded-3xl text-white shadow-xl h-full">
+                                        <div className="flex items-center gap-3 mb-8">
+                                            <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center">
+                                                <CheckCircle size={22} className="text-white" />
+                                            </div>
+                                            <h3 className="text-2xl md:text-3xl font-bold">Vos bénéfices</h3>
+                                        </div>
+
+                                        <ul className="grid sm:grid-cols-1 gap-4">
+                                            {service.benefits.map((benefit, idx) => (
+                                                <li
+                                                    key={idx}
+                                                    className="flex items-start gap-3 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3 border border-white/10"
+                                                >
+                                                    <CheckCircle className="text-white shrink-0 mt-0.5" size={18} />
+                                                    <span className="text-white/95 text-sm md:text-base leading-relaxed font-medium">
+                                                        {benefit}
+                                                    </span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                </Reveal>
+                            )}
+
+                            {/* FAQ */}
+                            {service.faq && service.faq.length > 0 && (
+                                <Reveal delay="delay-200">
+                                    <div className="h-full flex flex-col">
+                                        <div className="mb-6">
+                                            <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
+                                                Questions Fréquentes
+                                            </h3>
+                                            <p className="text-gray-500 text-sm">
+                                                Les réponses aux questions les plus courantes sur {service.title.toLowerCase()}.
+                                            </p>
+                                        </div>
+                                        <div className="space-y-3 flex-1">
+                                            {service.faq.map((item, idx) => (
+                                                <FAQItem key={idx} question={item.question} answer={item.answer} />
+                                            ))}
+                                        </div>
+                                    </div>
+                                </Reveal>
+                            )}
                         </div>
                     </div>
-                </Reveal>
-            )}
+                </div>
+            ) : null}
 
             {/* Navigation to other services */}
             <div className="bg-gray-900 py-16 text-white border-t border-gray-800">
