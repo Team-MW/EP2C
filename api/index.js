@@ -19,7 +19,20 @@ const prisma = new PrismaClient();
 
 async function getClerk() {
     const clerkMod = await import('@clerk/clerk-sdk-node');
-    return clerkMod.default || clerkMod.clerkClient;
+    if (!process.env.CLERK_SECRET_KEY) {
+        throw new Error('CLERK_SECRET_KEY manquante dans .env');
+    }
+    if (typeof clerkMod.createClerkClient === 'function') {
+        return clerkMod.createClerkClient({ secretKey: process.env.CLERK_SECRET_KEY });
+    }
+    return clerkMod.clerkClient || clerkMod.default;
+}
+
+function clerkErrorMessage(error) {
+    const first = error?.errors?.[0];
+    if (first?.longMessage) return first.longMessage;
+    if (first?.message) return first.message;
+    return error?.message || 'Erreur Clerk inconnue';
 }
 
 // --- CONFIGURATION ---
@@ -112,42 +125,62 @@ app.post('/api/users', async (req, res) => {
 
 // 2b. MANUAL CREATE (Admin)
 app.post('/api/users/manual', async (req, res) => {
-    const { email, firstName, lastName, company } = req.body;
+    const email = String(req.body?.email || '').trim().toLowerCase();
+    const firstName = String(req.body?.firstName || '').trim();
+    const lastName = String(req.body?.lastName || '').trim();
+    const company = String(req.body?.company || '').trim() || null;
+
+    if (!email || !email.includes('@')) {
+        return res.status(400).json({ error: 'Email invalide' });
+    }
+    if (!firstName || !lastName) {
+        return res.status(400).json({ error: 'Prénom et nom obligatoires' });
+    }
+
     try {
-        let clerkUser;
+        const clerk = await getClerk();
         let clerkId;
+        let createdInClerk = false;
 
         try {
-            const clerk = await getClerk();
-            clerkUser = await clerk.users.createUser({
+            const clerkUser = await clerk.users.createUser({
                 emailAddress: [email],
                 firstName,
                 lastName,
                 skipPasswordRequirement: true,
+                publicMetadata: { role: 'client', createdBy: 'admin' },
             });
             clerkId = clerkUser.id;
+            createdInClerk = true;
         } catch (clerkErr) {
-            if (clerkErr.errors && clerkErr.errors[0]?.code === 'form_identifier_exists') {
-                const clerk = await getClerk();
+            const code = clerkErr?.errors?.[0]?.code;
+            if (code === 'form_identifier_exists') {
                 const userList = await clerk.users.getUserList({ emailAddress: [email] });
-                if (userList.length > 0) {
-                    clerkId = userList[0].id;
-                } else {
-                    throw clerkErr;
-                }
+                const existing = Array.isArray(userList) ? userList[0] : userList?.data?.[0];
+                if (!existing?.id) throw clerkErr;
+                clerkId = existing.id;
+                await clerk.users.updateUser(clerkId, { firstName, lastName }).catch(() => {});
             } else {
-                throw clerkErr;
+                return res.status(400).json({ error: clerkErrorMessage(clerkErr) });
             }
         }
 
-        let user = await prisma.user.findUnique({
-            where: { email }
-        });
+        let inviteUrl = null;
+        try {
+            const token = await clerk.signInTokens.createSignInToken({
+                userId: clerkId,
+                expiresInSeconds: 60 * 60 * 24 * 7, // 7 jours
+            });
+            inviteUrl = token.url || null;
+        } catch (tokenErr) {
+            console.warn('Impossible de créer le lien de connexion Clerk:', clerkErrorMessage(tokenErr));
+        }
 
+        let user = await prisma.user.findUnique({ where: { email } });
         if (user) {
             user = await prisma.user.update({
                 where: { id: user.id },
-                data: { clerkId, firstName, lastName, company, status: 'En attente' }
+                data: { clerkId, firstName, lastName, company, status: 'En attente' },
             });
         } else {
             user = await prisma.user.create({
@@ -158,15 +191,23 @@ app.post('/api/users/manual', async (req, res) => {
                     lastName,
                     company,
                     role: 'client',
-                    status: 'En attente'
-                }
+                    status: 'En attente',
+                },
             });
         }
 
-        res.json(user);
+        res.json({
+            ...user,
+            documents: [],
+            inviteUrl,
+            createdInClerk,
+            message: inviteUrl
+                ? 'Client créé. Envoyez-lui le lien de connexion (valable 7 jours).'
+                : 'Client créé. Il pourra se connecter via /login avec cet email (mot de passe oublié / code email selon Clerk).',
+        });
     } catch (error) {
-        console.error("Manual create error:", error);
-        res.status(500).json({ error: error.message || 'Erreur création manuelle' });
+        console.error('Manual create error:', error);
+        res.status(500).json({ error: clerkErrorMessage(error) });
     }
 });
 

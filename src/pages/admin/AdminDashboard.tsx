@@ -175,6 +175,7 @@ export default function AdminDashboard() {
     const [showCreateForm, setShowCreateForm] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
+    const [inviteUrl, setInviteUrl] = useState('');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     // Auth State
@@ -222,7 +223,8 @@ export default function AdminDashboard() {
 
     const handleCreateUser = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const formData = new FormData(e.currentTarget);
+        const form = e.currentTarget;
+        const formData = new FormData(form);
 
         setIsLoading(true);
 
@@ -238,24 +240,37 @@ export default function AdminDashboard() {
                 })
             });
 
+            const payload = await res.json().catch(() => ({}));
+
             if (res.ok) {
-                const newUser = await res.json();
-                setUsers([...users, newUser]);
+                const { inviteUrl: link, message, ...newUser } = payload;
+                setUsers(prev => {
+                    const exists = prev.some(u => u.id === newUser.id || u.email === newUser.email);
+                    if (exists) {
+                        return prev.map(u => (u.id === newUser.id || u.email === newUser.email)
+                            ? { ...u, ...newUser, documents: u.documents || [] }
+                            : u);
+                    }
+                    return [...prev, { ...newUser, documents: newUser.documents || [] }];
+                });
+                setInviteUrl(typeof link === 'string' ? link : '');
                 setIsLoading(false);
                 setShowCreateForm(false);
                 setShowSuccess(true);
+                form.reset();
+                // Refresh from DB to stay consistent
+                fetchUsers();
 
                 setTimeout(() => {
                     setShowSuccess(false);
-                }, 3000);
+                }, 8000);
             } else {
-                const err = await res.json();
                 setIsLoading(false);
-                alert("Erreur: " + err.error);
+                alert('Erreur: ' + (payload.error || 'création impossible'));
             }
         } catch (error) {
             setIsLoading(false);
-            alert("Erreur réseau");
+            alert('Erreur réseau');
         }
     };
 
@@ -784,15 +799,17 @@ export default function AdminDashboard() {
                                             <div className="space-y-1">
                                                 <label className="text-sm font-medium text-gray-700">Email (Identifiant)</label>
                                                 <input required type="email" name="email" className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none" placeholder="client@exemple.com" />
-                                                <p className="text-xs text-gray-500">Le client devra utiliser cet email pour s'inscrire/se connecter.</p>
+                                                <p className="text-xs text-gray-500">Un compte Clerk est créé. Vous pourrez copier un lien de connexion à envoyer au client.</p>
                                             </div>
                                             <div className="space-y-1">
                                                 <label className="text-sm font-medium text-gray-700">Société</label>
-                                                <input name="company" className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none" placeholder="Ex: Société SAS" />
+                                                <input name="company" className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-100 outline-none" placeholder="Ex: Société SAS" disabled={isLoading} />
                                             </div>
                                             <div className="pt-4 flex gap-3">
-                                                <button type="button" onClick={() => setShowCreateForm(false)} className="flex-1 px-4 py-2 border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 font-medium">Annuler</button>
-                                                <button type="submit" className="action-btn-modern action-btn-primary flex-1 px-4 py-2 rounded-lg font-semibold text-sm border-none">Créer</button>
+                                                <button type="button" onClick={() => setShowCreateForm(false)} disabled={isLoading} className="flex-1 px-4 py-2 border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 font-medium disabled:opacity-50">Annuler</button>
+                                                <button type="submit" disabled={isLoading} className="action-btn-modern action-btn-primary flex-1 px-4 py-2 rounded-lg font-semibold text-sm border-none disabled:opacity-50">
+                                                    {isLoading ? 'Création...' : 'Créer'}
+                                                </button>
                                             </div>
                                         </form>
                                     </div>
@@ -920,14 +937,50 @@ export default function AdminDashboard() {
             {/* SUCCESS POPUP */}
             {showSuccess && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-2xl shadow-xl p-8 max-w-sm w-full text-center animate-in zoom-in duration-300">
+                    <div className="bg-white rounded-2xl shadow-xl p-8 max-w-lg w-full text-center animate-in zoom-in duration-300">
                         <div className="flex justify-center mb-4">
                             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
                                 <CheckCircle className="text-green-600" size={40} />
                             </div>
                         </div>
                         <h3 className="text-xl font-bold text-gray-900 mb-2">Client créé avec succès !</h3>
-                        <p className="text-gray-600 text-sm">Le client pourra se connecter avec son email.</p>
+                        <p className="text-gray-600 text-sm mb-4">
+                            Envoyez-lui le lien ci-dessous pour qu’il accède à son espace (valable 7 jours).
+                        </p>
+                        {inviteUrl ? (
+                            <div className="space-y-3 text-left">
+                                <textarea
+                                    readOnly
+                                    value={inviteUrl}
+                                    className="w-full text-xs font-mono p-3 border border-gray-200 rounded-lg bg-gray-50 min-h-[90px]"
+                                />
+                                <button
+                                    type="button"
+                                    className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700"
+                                    onClick={async () => {
+                                        try {
+                                            await navigator.clipboard.writeText(inviteUrl);
+                                            alert('Lien copié !');
+                                        } catch {
+                                            alert('Impossible de copier automatiquement. Sélectionnez le lien manuellement.');
+                                        }
+                                    }}
+                                >
+                                    Copier le lien de connexion
+                                </button>
+                            </div>
+                        ) : (
+                            <p className="text-sm text-amber-700 bg-amber-50 border border-amber-100 rounded-lg p-3">
+                                Compte créé, mais le lien d’invitation n’a pas pu être généré. Le client peut tenter « Mot de passe oublié » sur /login.
+                            </p>
+                        )}
+                        <button
+                            type="button"
+                            className="mt-4 text-sm text-gray-500 hover:text-gray-800"
+                            onClick={() => setShowSuccess(false)}
+                        >
+                            Fermer
+                        </button>
                     </div>
                 </div>
             )}
