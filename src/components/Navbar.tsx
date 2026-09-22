@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Search, ArrowRight, Menu, X, User, ChevronRight, Phone, MapPin } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
+import logoWhite from '../assets/white-min.png';
 
 export default function Navbar() {
     const location = useLocation();
@@ -35,7 +36,6 @@ export default function Navbar() {
     }, []);
 
     const isActive = (path: string) => {
-        // Simple active check
         if (path === '/' && location.pathname !== '/') return '';
         return location.pathname.startsWith(path) ? 'active' : '';
     };
@@ -51,7 +51,6 @@ export default function Navbar() {
         { path: '/blog', label: 'ACTUALITÉS' },
     ];
 
-    // Mobile Menu Portal Component
     const MobileMenu = () => {
         if (typeof document === 'undefined') return null;
 
@@ -60,27 +59,27 @@ export default function Navbar() {
                 className={`fixed inset-0 z-[9999] md:hidden transition-all duration-500 ${isMenuOpen ? 'visible pointer-events-auto' : 'invisible pointer-events-none delay-300'
                     }`}
             >
-                {/* Backdrop */}
                 <div
                     className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-500 ease-in-out ${isMenuOpen ? 'opacity-100' : 'opacity-0'
                         }`}
                     onClick={() => setIsMenuOpen(false)}
                 />
 
-                {/* Menu Panel */}
                 <div
                     className={`absolute right-0 top-0 h-full w-[85%] max-w-[400px] bg-[#0f172a] shadow-2xl transform transition-transform duration-500 cubic-bezier(0.4, 0, 0.2, 1) ${isMenuOpen ? 'translate-x-0' : 'translate-x-full'
                         }`}
                 >
-                    {/* Decorative Gradients */}
                     <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-blue-600/20 rounded-full blur-[100px] pointer-events-none mix-blend-screen" />
                     <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-indigo-600/10 rounded-full blur-[100px] pointer-events-none mix-blend-screen" />
 
                     <div className="flex flex-col h-full relative z-10">
-                        {/* Header */}
                         <div className="flex items-center justify-between p-6 border-b border-white/5">
-                            <Link to="/" onClick={() => setIsMenuOpen(false)} className="text-2xl font-bold tracking-tight">
-                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">EP2C</span>
+                            <Link to="/" onClick={() => setIsMenuOpen(false)} className="flex items-center">
+                                <img
+                                    src={logoWhite}
+                                    alt="Efficience EP2C"
+                                    className="h-10 w-auto object-contain"
+                                />
                             </Link>
                             <button
                                 onClick={() => setIsMenuOpen(false)}
@@ -91,7 +90,6 @@ export default function Navbar() {
                             </button>
                         </div>
 
-                        {/* Links */}
                         <div className="flex-1 overflow-y-auto py-8 px-6 flex flex-col gap-6">
                             <nav className="flex flex-col gap-2">
                                 {navLinks.map((link, idx) => (
@@ -115,27 +113,24 @@ export default function Navbar() {
                                 ))}
                             </nav>
 
-                            {/* Divider */}
                             <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent my-2" />
 
-                            {/* Contact Info */}
                             <div className="space-y-4 px-2">
-                                <a href="tel:+33123456789" className="flex items-center gap-4 text-white hover:text-blue-400 transition-colors">
+                                <a href="tel:+33659247370" className="flex items-center gap-4 text-white hover:text-blue-400 transition-colors">
                                     <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
                                         <Phone size={18} />
                                     </div>
-                                    <span className="text-sm font-semibold" style={{ color: '#ffffff' }}>+33 1 23 45 67 89</span>
+                                    <span className="text-sm font-semibold" style={{ color: '#ffffff' }}>+33 6 59 24 73 70</span>
                                 </a>
                                 <div className="flex items-center gap-4 text-white">
                                     <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
                                         <MapPin size={18} />
                                     </div>
-                                    <span className="text-sm font-semibold" style={{ color: '#ffffff' }}>Paris, France</span>
+                                    <span className="text-sm font-semibold" style={{ color: '#ffffff' }}>Montpellier, France</span>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Footer (CTA) */}
                         <div className="p-6 border-t border-white/5 bg-[#0f172a]/50 backdrop-blur-lg mt-auto">
                             <div className="grid grid-cols-2 gap-4">
                                 <Link
@@ -168,13 +163,15 @@ export default function Navbar() {
             <nav className={`navbar sticky top-0 z-50 bg-[#0f172a]/95 backdrop-blur-md border-b border-white/5 text-white shadow-lg transition-all duration-300 ${scrolled ? 'py-0' : 'py-2'}`}>
                 <div className="container navbar-container flex items-center justify-between h-16 md:h-20 px-4">
 
-                    {/* Logo (Visible Mobile & Desktop) */}
                     <div className="flex items-center justify-between w-full md:w-auto">
-                        <Link to="/" className="text-2xl font-bold text-white tracking-tight z-[60]">
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600">EP2C</span>
+                        <Link to="/" className="flex items-center z-[60]">
+                            <img
+                                src={logoWhite}
+                                alt="Efficience EP2C"
+                                className="h-9 md:h-11 w-auto object-contain"
+                            />
                         </Link>
 
-                        {/* Mobile Menu Burger */}
                         <button
                             type="button"
                             className="md:hidden p-2 text-white hover:text-blue-400 transition-colors hover:bg-white/10 rounded-lg z-[60]"
@@ -185,7 +182,6 @@ export default function Navbar() {
                         </button>
                     </div>
 
-                    {/* Desktop Navigation */}
                     <div className="hidden md:flex items-center justify-between flex-1 pl-12">
                         <ul className="nav-list flex items-center gap-8 text-sm font-semibold tracking-wider text-gray-300">
                             {navLinks.map((link) => (
