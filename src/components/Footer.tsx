@@ -30,7 +30,7 @@ export default function Footer() {
                         <li><Link to="/about" className="hover:text-white hover:translate-x-1 transition-all inline-block">À propos de nous</Link></li>
                         <li><Link to="/services" className="hover:text-white hover:translate-x-1 transition-all inline-block">Nos Services</Link></li>
                         <li><Link to="/blog" className="hover:text-white hover:translate-x-1 transition-all inline-block">Blog & Actualités</Link></li>
-                        <li><Link to="/contact" className="hover:text-white hover:translate-x-1 transition-all inline-block">Contact</Link></li>
+                        <li><Link to="/prendre-rdv" className="hover:text-white hover:translate-x-1 transition-all inline-block">Contact</Link></li>
                     </ul>
                 </div>
 

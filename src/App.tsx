@@ -25,6 +25,7 @@ function App() {
         <Route path="/blog" element={<Blog />} />
         <Route path="/services/:slug" element={<ServiceDetail />} />
         <Route path="/prendre-rdv" element={<PrendreRDV />} />
+        <Route path="/contact" element={<PrendreRDV />} />
 
         {/* Dashboard Routes  - Protected in   real app */}
         <Route path="/panel" element={<ClientDashboard />} />

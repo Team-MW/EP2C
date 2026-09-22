@@ -2,14 +2,12 @@ import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
-import streamifier from 'streamifier';
 import 'dotenv/config';
-import fs from 'fs/promises';
-import fsSync from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { PrismaClient } from '@prisma/client';
 import { checkDatabase } from '../server/database-health.js';
+import { saveDocument, pdfHandler } from '../server/document-storage.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -36,21 +34,10 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 4 *
 app.use(cors());
 app.use(express.json());
 
-// Setup static uploads directory for PDFs
-// On Vercel, only /tmp is writable. Locally we use api/uploads.
-const isVercel = !!process.env.VERCEL;
-const UPLOADS_DIR = isVercel ? '/tmp/uploads' : path.join(__dirname, 'uploads');
-try {
-    if (!fsSync.existsSync(UPLOADS_DIR)) {
-        fsSync.mkdirSync(UPLOADS_DIR, { recursive: true });
-    }
-} catch (e) {
-    console.warn('Could not create uploads dir:', e.message);
+// Compatibility for existing local documents; new uploads always use durable storage.
+if (!process.env.VERCEL) {
+    app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
 }
-if (!isVercel) {
-    app.use('/api/uploads', express.static(UPLOADS_DIR));
-}
-
 
 // --- ROUTES ---
 
@@ -207,56 +194,26 @@ app.post('/api/documents', upload.single('file'), async (req, res) => {
 
         if (!file) return res.status(400).json({ error: "Aucun fichier fourni" });
 
-        let secure_url;
-        let size;
-        let format;
-
-        if (file.mimetype === 'application/pdf' && !isVercel) {
-            const fileName = `${Date.now()}_${file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-            const filePath = path.join(UPLOADS_DIR, fileName);
-            await fs.writeFile(filePath, file.buffer);
-            secure_url = `/api/uploads/${fileName}`;
-            size = (file.size / 1024 / 1024).toFixed(2) + ' MB';
-            format = 'pdf';
-        } else {
-            const uploadFromBuffer = (buffer) => {
-                return new Promise((resolve, reject) => {
-                    let cld_upload_stream = cloudinary.uploader.upload_stream(
-                        { folder: "ep2c_documents", resource_type: file.mimetype === 'application/pdf' ? 'raw' : 'auto', access_mode: "public", type: "upload" },
-                        (error, result) => { if (result) resolve(result); else reject(error); }
-                    );
-                    streamifier.createReadStream(buffer).pipe(cld_upload_stream);
-                });
-            };
-            const result = await uploadFromBuffer(file.buffer);
-            secure_url = result.secure_url;
-            size = (result.bytes / 1024 / 1024).toFixed(2) + ' MB';
-            format = file.mimetype === 'application/pdf' ? 'pdf' : (result.format || 'unknown');
-        }
-
         const category = req.body.category || 'Autre';
         const displayName = `[${category}] ${file.originalname}`;
         const parsedFolderId = folderId && folderId !== 'null' && folderId !== 'undefined' ? parseInt(folderId) : null;
 
-        const doc = await prisma.document.create({
-            data: {
-                name: displayName,
-                type: format,
-                size: size,
-                url: secure_url,
-                status: 'En attente',
-                isRead: false,
-                userId: parseInt(userId),
-                folderId: parsedFolderId
-            }
+        const doc = await saveDocument(prisma, cloudinary, file, {
+            name: displayName,
+            status: 'En attente',
+            isRead: false,
+            userId: parseInt(userId),
+            folderId: parsedFolderId,
         });
 
         res.json(doc);
     } catch (error) {
         console.error("Erreur d'upload:", error);
-        res.status(500).json({ error: 'Upload failed' });
+        res.status(error.status === 400 ? 400 : 500).json({ error: error.status === 400 ? error.message : 'Enregistrement du document impossible' });
     }
 });
+
+app.get('/api/documents/:id/file', pdfHandler(prisma));
 
 // 5. CREATE A FOLDER
 app.post('/api/folders', async (req, res) => {

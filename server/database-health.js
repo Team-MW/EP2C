@@ -14,6 +14,7 @@ export async function checkDatabase(prisma, databaseUrl = process.env.DATABASE_U
         await prisma.user.findFirst();
         await prisma.document.findFirst();
         await prisma.folder.findFirst();
+        await prisma.documentPdf.findFirst({ select: { documentId: true } });
         return { status: 'ok', database: 'connected', schema: 'ready' };
     } catch (error) {
         const code = databaseErrorCode(error);

@@ -38,9 +38,16 @@ model Document {
   folderId  Int?
   user      User     @relation(fields: [userId], references: [id])
   folder    Folder?  @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  pdf       DocumentPdf?
 
   @@index([userId])
   @@index([folderId])
+}
+
+model DocumentPdf {
+  documentId Int      @id
+  data       Bytes    @db.LongBlob
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
 }
 
 model Folder {

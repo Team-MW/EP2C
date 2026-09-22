@@ -54,7 +54,7 @@ export default function Login() {
                                 footerActionLink: "text-[#1044A9] hover:text-[#0d3685]"
                             }
                         }}
-                        signUpUrl="/contact"
+                        signUpUrl="/prendre-rdv"
                         afterSignInUrl="/panel"
                     />
 

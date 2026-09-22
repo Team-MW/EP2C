@@ -90,7 +90,7 @@ export default function ProcessSection() {
                                     <p className="step-desc">{step.description}</p>
 
                                     {step.hasLink && (
-                                        <a href="/contact" className="step-link">
+                                        <a href="/prendre-rdv" className="step-link">
                                             {step.link} <ChevronRight size={16} />
                                         </a>
                                     )}

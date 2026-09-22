@@ -54,10 +54,27 @@ Aucune modification de schéma n'est nécessaire pour ce correctif.
 
 ### Documents
 
-Sur Vercel, les nouveaux PDF utilisent Cloudinary, comme les autres documents,
-au lieu de `/tmp`. Limite : 4 Mo par fichier. Les anciens liens `/api/uploads/...`
-doivent être récupérés depuis leur stockage d'origine et migrés séparément ; un
-fichier disparu de `/tmp` n'est pas restauré par un redéploiement.
+Règle du projet : voir `ia.md`.
+
+- Les PDF sont enregistrés dans MySQL, dans `DocumentPdf.data` (LONGBLOB).
+  La route `/api/documents/:id/file` les sert avec le type `application/pdf`.
+- Les images PNG/JPG/JPEG utilisent Cloudinary ; la base conserve leur URL.
+- Cette répartition est identique en local et sur Vercel. Limite d'envoi : 4 Mo.
+
+Sur une nouvelle base, après `prisma generate`, exécuter
+`node scripts/setup-pdf-storage.js --apply` pour créer uniquement la table
+`DocumentPdf`. Le SQL est disponible dans `prisma/document-pdf.sql`. Ne pas
+exécuter une synchronisation destructive du schéma global.
+
+Pour un ancien PDF présent dans `api/uploads`, la commande
+`node scripts/migrate-local-pdf.js NOM.pdf` vérifie le fichier et compte les liens
+sans modifier les données. Avec `--apply`, elle enregistre les octets dans MySQL,
+vérifie leur intégrité puis remplace le lien en transaction. L'original local
+est conservé. Aucun PDF n'est transféré à Cloudinary.
+
+Après modification de l'API, redémarrer le serveur local et redéployer sur Vercel.
+Recharger la liste des documents pour récupérer les nouveaux liens. Les anciens
+onglets `/api/uploads/...` ne constituent pas les nouveaux liens de téléchargement.
 
 ## Vérifications et audit
 

@@ -182,3 +182,29 @@ n'a pas été établie.
 avec sorties visibles et arrêt des processus enfants. Vérification après réparation :
 Vite prêt, API démarrée, page et module React en HTTP 200, `/api/health` via le
 proxy Vite en `connected / ready`, et 8 tests réussis.
+
+## Complément — stockage PDF demandé par l'utilisateur
+
+La règle définitive est inscrite dans `ia.md` : PDF dans MySQL, images PNG/JPG/JPEG
+sur Cloudinary, en local comme sur Vercel. Elle remplace la proposition antérieure
+d'envoyer les PDF à Cloudinary. Aucun transfert du PDF signalé vers Cloudinary
+n'a été effectué.
+
+La table `DocumentPdf` a été créée de manière additive dans la base configurée,
+avec une colonne LONGBLOB. Les métadonnées, le contenu PDF et le lien sont
+créés dans une transaction. Les listes de documents ne chargent pas les octets.
+La route `/api/documents/:id/file` renvoie les octets avec `application/pdf` et
+un cache désactivé. Le diagnostic de santé vérifie également la nouvelle table.
+
+Le PDF de la capture a été récupéré depuis le Mac : un document mis à jour,
+119 984 octets conservés en MySQL et vérifiés identiques à l'original.
+La route HTTP a été testée avec la base réelle : statut 200 et contenu identique.
+L'original local est conservé.
+
+Validation finale : 14 tests réussis, compilation réussie et contrôle de syntaxe
+réussi. Aucun serveur de test n'est laissé ouvert. Le serveur local doit être
+redémarré et la nouvelle API redéployée sur Vercel ; recharger ensuite la liste
+des documents pour obtenir les nouveaux liens.
+
+La sécurité d'accès aux routes API reste le point P0 décrit plus haut ; stocker
+les PDF dans MySQL ne remplace pas les contrôles d'identité et de propriété.
